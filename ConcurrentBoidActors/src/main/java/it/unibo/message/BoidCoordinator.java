@@ -21,19 +21,19 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
     }
 
 
-    private Behavior<BoidMessage> onStart(Start msg) {
+    private Behavior<BoidMessage> onStart(Start message) {
         return this;
     }
 
-    private Behavior<BoidMessage> onVelocityComputed(VelocityComputed msg) {
+    private Behavior<BoidMessage> onVelocityComputed(VelocityComputed message) {
         return this;
     }
 
-    private Behavior<BoidMessage> onVelocityUpdated(VelocityUpdated msg) {
+    private Behavior<BoidMessage> onVelocityUpdated(VelocityUpdated message) {
         return this;
     }
 
-    private Behavior<BoidMessage> onPositionUpdated(PositionUpdated msg) {
+    private Behavior<BoidMessage> onPositionUpdated(PositionUpdated message) {
         return this;
     }
 
