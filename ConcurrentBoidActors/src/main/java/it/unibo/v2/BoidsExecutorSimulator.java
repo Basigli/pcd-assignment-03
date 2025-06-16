@@ -1,7 +1,5 @@
 package it.unibo.v2;
 
-
-
 import it.unibo.commmon.BoidsModel;
 import it.unibo.commmon.BoidsSimulator;
 import it.unibo.commmon.BoidsView;
