@@ -7,22 +7,35 @@ import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
+import it.unibo.commmon.Boid;
 import it.unibo.commmon.BoidsModel;
 import it.unibo.commmon.BoidsView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
-    private final List<ActorRef<BoidMessage>> boidActors;
-    private final ActorRef<BoidMessage> viewActor;
+    private List<ActorRef<BoidMessage>> boidActors = new ArrayList<>();
+    private ActorRef<BoidMessage> viewActor = null;
     private int boidCount = 0;
     private boolean isPaused = false;
+    private BoidsModel model = null;
 
+    private final int FRAMERATE = 25; // frames per second
+    private long t0 = System.currentTimeMillis();
+    private int framerate;
 
-    private BoidCoordinator(ActorContext<BoidMessage> context, List<ActorRef<BoidMessage>> boidActors, ActorRef<BoidMessage> viewActor) {
+    public static Behavior<BoidMessage> create(BoidsModel model) {
+        return Behaviors.setup(context -> new BoidCoordinator(context, model));
+    }
+    private BoidCoordinator(ActorContext<BoidMessage> context, BoidsModel model) {
         super(context);
-        this.boidActors = boidActors;
-        this.viewActor = viewActor;
+        List<Boid> boids = model.getBoids();
+
+        for (int i = 0; i < boids.size(); i++) {
+            ActorRef<BoidMessage> boid = context.spawn(BoidActor.create(context.getSelf(), boids.get(i), model), "boid-" + i);
+            boidActors.add(boid);
+        }
     }
 
 
@@ -35,7 +48,13 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
                 .onMessage(VelocityComputed.class, this::onVelocityComputed)
                 .onMessage(VelocityUpdated.class, this::onVelocityUpdated)
                 .onMessage(PositionUpdated.class, this::onPositionUpdated)
+                .onMessage(AttachView.class, this::onAttachView)
                 .build();
+    }
+
+    private Behavior<BoidMessage> onAttachView(AttachView attachView) {
+        this.viewActor = attachView.viewActor;
+        return this;
     }
 
     private Behavior<BoidMessage> onResume(Resume resume) {
@@ -79,8 +98,22 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         // update GUI
         if (boidCount == boidActors.size()) {
             boidCount = 0;
-            viewActor.tell(new UpdateView());
+            viewActor.tell(new UpdateView(framerate));
+            var t1 = System.currentTimeMillis();
+            var dtElapsed = t1 - t0;
+            var frameratePeriod = 1000/FRAMERATE;
+            if (dtElapsed < frameratePeriod) {
+                try {
+                    Thread.sleep(frameratePeriod - dtElapsed);
+                } catch (Exception ex) {}
+                framerate = FRAMERATE;
+            } else {
+                framerate = (int) (1000/dtElapsed);
+            }
+            t0 = System.currentTimeMillis();
         }
+
+
         // if not paused, compute next velocity
         if (!isPaused) {
             boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));

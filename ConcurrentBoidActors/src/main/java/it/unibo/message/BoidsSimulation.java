@@ -1,11 +1,16 @@
 package it.unibo.message;
 
-import akka.actor.ActorSystem;
+import akka.actor.typed.ActorRef;
+import akka.actor.typed.ActorSystem;
+import it.unibo.commmon.Boid;
 import it.unibo.commmon.BoidsModel;
 import it.unibo.commmon.BoidsView;
 import it.unibo.message.BoidCoordinator;
+
+import java.util.List;
+
 public class BoidsSimulation {
-    final static int N_BOIDS = 1500;
+    final static int N_BOIDS = 100; // 1500;
     final static double SEPARATION_WEIGHT = 1.0;
     final static double ALIGNMENT_WEIGHT = 1.0;
     final static double COHESION_WEIGHT = 1.0;
@@ -28,12 +33,20 @@ public class BoidsSimulation {
                 MAX_SPEED,
                 PERCEPTION_RADIUS,
                 AVOID_RADIUS);
-        var actorSystem = ActorSystem.create("boid-actor-system");
 
-        var view = new BoidsView(model, null, SCREEN_WIDTH, SCREEN_HEIGHT);
-        var coordinator = actorSystem.actorOf(
-                BoidCoordinator.props(model, view),
-                "boid-coordinator");
+
+        ActorSystem<BoidMessage> coordinator = ActorSystem.create(BoidCoordinator.create(model), "Coorinator");
+
+
+        ActorSystem<BoidMessage> viewActor = ActorSystem.create(ViewActor.create(model, coordinator, SCREEN_WIDTH, SCREEN_HEIGHT), "ViewActor");  // should I use ActorRef instead of ActorSystem?
+
+
+
+        coordinator.tell(new AttachView(viewActor));
+        coordinator.tell(new Start());
+
+
+
 
         //sim.attachView(view);
         //sim.runSimulation();
