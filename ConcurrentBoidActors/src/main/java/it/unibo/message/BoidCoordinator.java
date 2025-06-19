@@ -21,7 +21,7 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
     private boolean isPaused = false;
     private BoidsModel model = null;
 
-    private final int FRAMERATE = 25; // frames per second
+    private final int FRAMERATE = 25; // 25 frames per second
     private long t0 = System.currentTimeMillis();
     private int framerate;
 
@@ -104,6 +104,7 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
             var frameratePeriod = 1000/FRAMERATE;
             if (dtElapsed < frameratePeriod) {
                 try {
+
                     Thread.sleep(frameratePeriod - dtElapsed);
                 } catch (Exception ex) {}
                 framerate = FRAMERATE;
@@ -111,13 +112,15 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
                 framerate = (int) (1000/dtElapsed);
             }
             t0 = System.currentTimeMillis();
+
+            // if not paused, compute next velocity
+            if (!isPaused) {
+                boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));
+            }
+
         }
 
 
-        // if not paused, compute next velocity
-        if (!isPaused) {
-            boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));
-        }
         return this;
     }
 }

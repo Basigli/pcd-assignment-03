@@ -10,7 +10,7 @@ import it.unibo.message.BoidCoordinator;
 import java.util.List;
 
 public class BoidsSimulation {
-    final static int N_BOIDS = 100; // 1500;
+    final static int N_BOIDS = 5000; // 1500;
     final static double SEPARATION_WEIGHT = 1.0;
     final static double ALIGNMENT_WEIGHT = 1.0;
     final static double COHESION_WEIGHT = 1.0;
@@ -40,13 +40,8 @@ public class BoidsSimulation {
 
         ActorSystem<BoidMessage> viewActor = ActorSystem.create(ViewActor.create(model, coordinator, SCREEN_WIDTH, SCREEN_HEIGHT), "ViewActor");  // should I use ActorRef instead of ActorSystem?
 
-
-
         coordinator.tell(new AttachView(viewActor));
         coordinator.tell(new Start());
-
-
-
 
         //sim.attachView(view);
         //sim.runSimulation();
