@@ -96,29 +96,33 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         boidCount++;
         // if all boids have updated their position, notify the view actor
         // update GUI
-        if (boidCount == boidActors.size()) {
-            boidCount = 0;
-            viewActor.tell(new UpdateView(framerate));
-            var t1 = System.currentTimeMillis();
-            var dtElapsed = t1 - t0;
-            var frameratePeriod = 1000/FRAMERATE;
-            if (dtElapsed < frameratePeriod) {
-                try {
+        if (boidCount != boidActors.size())
+            return this;
 
-                    Thread.sleep(frameratePeriod - dtElapsed);
-                } catch (Exception ex) {}
-                framerate = FRAMERATE;
-            } else {
-                framerate = (int) (1000/dtElapsed);
+
+        boidCount = 0;
+        viewActor.tell(new UpdateView(framerate));
+        var t1 = System.currentTimeMillis();
+        var dtElapsed = t1 - t0;
+        var frameratePeriod = 1000 / FRAMERATE;
+        if (dtElapsed < frameratePeriod) {
+            try {
+
+                Thread.sleep(frameratePeriod - dtElapsed);
+            } catch (Exception ex) {
             }
-            t0 = System.currentTimeMillis();
-
-            // if not paused, compute next velocity
-            if (!isPaused) {
-                boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));
-            }
-
+            framerate = FRAMERATE;
+        } else {
+            framerate = (int) (1000 / dtElapsed);
         }
+        t0 = System.currentTimeMillis();
+
+        // if not paused, compute next velocity
+        if (!isPaused) {
+            boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));
+        }
+
+
 
 
         return this;
