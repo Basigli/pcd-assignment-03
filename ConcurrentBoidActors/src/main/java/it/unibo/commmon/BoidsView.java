@@ -1,5 +1,13 @@
 package it.unibo.commmon;
 
+import akka.actor.typed.ActorRef;
+import akka.actor.typed.Behavior;
+import akka.actor.typed.javadsl.AbstractBehavior;
+import akka.actor.typed.javadsl.ActorContext;
+import akka.actor.typed.javadsl.Behaviors;
+import akka.actor.typed.javadsl.Receive;
+import it.unibo.message.*;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -7,7 +15,7 @@ import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
 
-public class BoidsView implements ChangeListener {
+public class BoidsView extends AbstractBehavior<BoidMessage> implements ChangeListener {
 
 	private JFrame frame;
 	private BoidsPanel boidsPanel;
@@ -15,14 +23,19 @@ public class BoidsView implements ChangeListener {
 	private JButton pauseResumeButton;
 	private JButton startResetButton;
 	private JTextField boidsNumberInput;
-	private BoidsModel model;
+	private ActorRef<BoidMessage> model;
 	private int width, height;
 
-	private BoidsSimulator simulator;
-	
-	public BoidsView(BoidsModel model, BoidsSimulator simulator, int width, int height) {
+	private ActorRef<BoidMessage> coordinator;
+
+	public static Behavior<BoidMessage> create(ActorRef<BoidMessage> model, ActorRef<BoidMessage> coordinator, int width, int height) {
+		return Behaviors.setup(context -> new BoidsView(context, model, coordinator, width, height));
+	}
+
+	private BoidsView(ActorContext<BoidMessage> context, ActorRef<BoidMessage> model, ActorRef<BoidMessage> coordinator, int width, int height) {
+		super(context);
 		this.model = model;
-		this.simulator = simulator;
+		this.coordinator = coordinator;
 		this.width = width;
 		this.height = height;
 
@@ -54,16 +67,19 @@ public class BoidsView implements ChangeListener {
 		boidsNumberInput.setEnabled(true);
 		boidsNumberInput.addActionListener(e -> {
             String input = boidsNumberInput.getText();
-            model.setNboids(Integer.parseInt(input));
-			simulator.notifyBoidsChanged();
-        });
+            // model.setNboids(Integer.parseInt(input));
+			// simulator.notifyBoidsChanged();
+        	coordinator.tell(new BoidChange());
+		});
 
 		pauseResumeButton.addActionListener(e -> {
             if (pauseResumeButton.getText().equals("Resume")){
-				simulator.notifyResumed();
+				// simulator.notifyResumed();
+				coordinator.tell(new Resume());
 				boidsNumberInput.setEnabled(false);
 			} else if (pauseResumeButton.getText().equals("Pause")) {
-				simulator.notifyStopped();
+				// simulator.notifyStopped();
+				coordinator.tell(new Stop());
 				boidsNumberInput.setEnabled(true);
 			}
 			pauseResumeButton.setText(pauseResumeButton.getText().equals("Resume") ? "Pause" : "Resume");
@@ -71,13 +87,15 @@ public class BoidsView implements ChangeListener {
 
 		startResetButton.addActionListener(e -> {
 			if(startResetButton.getText().equals("Start")) {
-				simulator.notifyStarted();
+				// simulator.notifyStarted();
+				coordinator.tell(new Start());
 				startResetButton.setText("Reset");
 				pauseResumeButton.setText("Pause");
 				pauseResumeButton.setEnabled(true);
 				boidsNumberInput.setEnabled(false);
 			} else if (startResetButton.getText().equals("Reset")){
-				simulator.notifyResetted();
+				// simulator.notifyResetted();
+				coordinator.tell(new Reset());
 				startResetButton.setText("Start");
 				boidsNumberInput.setEnabled(true);
 				pauseResumeButton.setEnabled(false);
@@ -102,6 +120,13 @@ public class BoidsView implements ChangeListener {
         frame.setVisible(true);
 	}
 
+	@Override
+	public Receive<BoidMessage> createReceive() {
+		return newReceiveBuilder()
+				.onMessage(UpdateView.class, this::update)
+				.build();
+	}
+
 	private JSlider makeSlider() {
 		var slider = new JSlider(JSlider.HORIZONTAL, 0, 20, 10);        
 		slider.setMajorTickSpacing(10);
@@ -118,15 +143,16 @@ public class BoidsView implements ChangeListener {
 		return slider;
 	}
 	
-	public void update(int frameRate) {
+	public Behavior<BoidMessage> update(UpdateView message) {
 		try {
 			SwingUtilities.invokeAndWait(() -> {
-				boidsPanel.setFrameRate(frameRate);
+				boidsPanel.setFrameRate(message.framerate);
 				boidsPanel.repaint();
 			});
 		} catch (InterruptedException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
+		return this;
     }
 
 
@@ -135,13 +161,13 @@ public class BoidsView implements ChangeListener {
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() == separationSlider) {
 			var val = separationSlider.getValue();
-			model.setSeparationWeight(0.1*val);
+			// model.setSeparationWeight(0.1*val);
 		} else if (e.getSource() == cohesionSlider) {
 			var val = cohesionSlider.getValue();
-			model.setCohesionWeight(0.1*val);
+			// model.setCohesionWeight(0.1*val);
 		} else if (e.getSource() == alignmentSlider){
 			var val = alignmentSlider.getValue();
-			model.setAlignmentWeight(0.1*val);
+			// model.setAlignmentWeight(0.1*val);
 		}
 
 	}
@@ -153,5 +179,6 @@ public class BoidsView implements ChangeListener {
 	public int getHeight() {
 		return height;
 	}
+
 
 }

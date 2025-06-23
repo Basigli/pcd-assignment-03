@@ -1,11 +1,22 @@
 package it.unibo.commmon;
 
+import akka.actor.typed.ActorRef;
+import akka.actor.typed.Behavior;
+import akka.actor.typed.javadsl.AbstractBehavior;
+import akka.actor.typed.javadsl.ActorContext;
+import akka.actor.typed.javadsl.Behaviors;
+import akka.actor.typed.javadsl.Receive;
+import it.unibo.message.BoidActor;
+import it.unibo.message.BoidMessage;
+import it.unibo.message.BoidsResponse;
+import it.unibo.message.GetBoids;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class BoidsModel {
+public class BoidsModel extends AbstractBehavior<BoidMessage>{
     
-    private final List<Boid> boids;
+    private final List<ActorRef<BoidMessage>> boids;
     private double separationWeight;
 
     private double alignmentWeight; 
@@ -16,15 +27,38 @@ public class BoidsModel {
     private final double perceptionRadius;
     private final double avoidRadius;
 
-    public BoidsModel(int nboids,  
-    						double initialSeparationWeight, 
-    						double initialAlignmentWeight, 
-    						double initialCohesionWeight,
-    						double width, 
-    						double height,
-    						double maxSpeed,
-    						double perceptionRadius,
-    						double avoidRadius){
+    public static Behavior<BoidMessage> create(int nboids,
+                                               double initialSeparationWeight,
+                                               double initialAlignmentWeight,
+                                               double initialCohesionWeight,
+                                               double width,
+                                               double height,
+                                               double maxSpeed,
+                                               double perceptionRadius,
+                                               double avoidRadius) {
+        return Behaviors.setup(context -> new BoidsModel(context,
+                nboids,
+                initialSeparationWeight,
+                initialAlignmentWeight,
+                initialCohesionWeight,
+                width,
+                height,
+                maxSpeed,
+                perceptionRadius,
+                avoidRadius));
+    }
+
+    private BoidsModel(ActorContext<BoidMessage> context,
+                       int nboids,
+                       double initialSeparationWeight,
+                       double initialAlignmentWeight,
+                       double initialCohesionWeight,
+                       double width,
+                       double height,
+                       double maxSpeed,
+                       double perceptionRadius,
+                       double avoidRadius){
+        super(context);
         separationWeight = initialSeparationWeight;
         alignmentWeight = initialAlignmentWeight;
         cohesionWeight = initialCohesionWeight;
@@ -41,9 +75,16 @@ public class BoidsModel {
         for (int i = 0; i < nboids; i++) {
             P2d pos = new P2d(-width/2 + Math.random() * width, -height/2 + Math.random() * height);
             V2d vel = new V2d(Math.random() * maxSpeed/2 - maxSpeed/4, Math.random() * maxSpeed/2 - maxSpeed/4);
-
-            boids.add(new Boid(pos, vel));
+            ActorRef<BoidMessage> boid = getContext().spawn(Boid.create(pos, vel), "boid-" + i);
+            boids.add(boid);
         }
+    }
+
+    @Override
+    public Receive<BoidMessage> createReceive() {
+        return newReceiveBuilder()
+                .onMessage(GetBoids.class, this::getBoids)
+                .build();
     }
 
     public synchronized void setNboids(int nboids) {
@@ -61,13 +102,12 @@ public class BoidsModel {
     public int getNboids() {return boids.size();}
 
 
-    public List<Boid> getBoids(){
-        return new ArrayList<>(boids);
+    public Behavior<BoidMessage> getBoids(GetBoids message){
+        message.replyTo.tell(new BoidsResponse(new ArrayList<>(boids)));
+        return this;
     }
-    public List<Boid> getBoids(int lowerBound, int upperBound){
-        return new ArrayList<>(boids.subList(lowerBound, upperBound));
-    }
-    
+
+
     public double getMinX() {
     	return -width/2;
     }
@@ -127,4 +167,6 @@ public class BoidsModel {
     public double getPerceptionRadius() {
     	return perceptionRadius;
     }
+
+
 }

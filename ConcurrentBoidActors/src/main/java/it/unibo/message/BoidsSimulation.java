@@ -27,19 +27,20 @@ public class BoidsSimulation {
 
 
     public static void main(String[] args) {
-        var model = new BoidsModel(
-                N_BOIDS,
-                SEPARATION_WEIGHT, ALIGNMENT_WEIGHT, COHESION_WEIGHT,
-                ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT,
+
+        ActorRef<BoidMessage> model = ActorSystem.create(BoidsModel.create(N_BOIDS,
+                SEPARATION_WEIGHT,
+                ALIGNMENT_WEIGHT,
+                COHESION_WEIGHT,
+                ENVIRONMENT_WIDTH,
+                ENVIRONMENT_HEIGHT,
                 MAX_SPEED,
                 PERCEPTION_RADIUS,
-                AVOID_RADIUS);
-
-
+                AVOID_RADIUS), "Model");
         ActorSystem<BoidMessage> coordinator = ActorSystem.create(BoidCoordinator.create(model), "Coorinator");
 
 
-        ActorSystem<BoidMessage> viewActor = ActorSystem.create(ViewActor.create(model, coordinator, SCREEN_WIDTH, SCREEN_HEIGHT), "ViewActor");  // should I use ActorRef instead of ActorSystem?
+        ActorSystem<BoidMessage> viewActor = ActorSystem.create(BoidsView.create(model, coordinator, SCREEN_WIDTH, SCREEN_HEIGHT), "ViewActor");  // should I use ActorRef instead of ActorSystem?
 
         coordinator.tell(new AttachView(viewActor));
         coordinator.tell(new Start());

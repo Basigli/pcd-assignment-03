@@ -1,9 +1,18 @@
 package it.unibo.commmon;
 
+
+import akka.actor.typed.ActorRef;
+import akka.actor.typed.Behavior;
+import akka.actor.typed.javadsl.AbstractBehavior;
+import akka.actor.typed.javadsl.ActorContext;
+import akka.actor.typed.javadsl.Behaviors;
+import akka.actor.typed.javadsl.Receive;
+import it.unibo.message.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Boid {
+public class Boid extends AbstractBehavior<BoidMessage> {
 
     private P2d pos;
     private V2d vel;
@@ -11,8 +20,13 @@ public class Boid {
     V2d alignment;
     V2d cohesion;
 
-    public Boid(P2d pos, V2d vel) {
-    	this.pos = pos;
+    public static Behavior<BoidMessage> create(P2d pos, V2d vel) {
+        return Behaviors.setup(context -> new Boid(context, pos, vel));
+    }
+
+    private Boid(ActorContext<BoidMessage> context, P2d pos, V2d vel) {
+    	super(context);
+        this.pos = pos;
     	this.vel = vel;
     }
     
@@ -24,31 +38,49 @@ public class Boid {
     	return vel;
     }
 
-    public void computeVelocity(BoidsModel model) {
+
+    @Override
+    public Receive<BoidMessage> createReceive() {
+        return newReceiveBuilder()
+                .onMessage(ComputeVelocity.class, this::computeVelocity)
+                .onMessage(UpdateVelocity.class, this::updateVelocity)
+                .onMessage(UpdatePosition.class, this::updatePos)
+                .onMessage(GetPosition.class, this::getPosition)
+                .build();
+    }
+
+    public Behavior<BoidMessage> getPosition(GetPosition message) {
+        message.replyTo.tell(new BoidPositionResponse(this.pos));
+        return this;
+    }
+
+    public Behavior<BoidMessage> computeVelocity(ComputeVelocity message) {
         /* change velocity vector according to separation, alignment, cohesion */
+        var model = message.model;
         List<Boid> nearbyBoids = getNearbyBoids(model);
         separation = calculateSeparation(nearbyBoids, model);
-        alignment = calculateAlignment(nearbyBoids, model);
-        cohesion = calculateCohesion(nearbyBoids, model);
+        alignment = calculateAlignment(nearbyBoids);
+        cohesion = calculateCohesion(nearbyBoids);
+        return this;
     }
-    public void updateVelocity(BoidsModel model) {
+
+    public Behavior<BoidMessage> updateVelocity(UpdateVelocity message) {
+        var model = message.model;
         vel = vel.sum(alignment.mul(model.getAlignmentWeight()))
                 .sum(separation.mul(model.getSeparationWeight()))
                 .sum(cohesion.mul(model.getCohesionWeight()));
 
         /* Limit speed to MAX_SPEED */
-
         double speed = vel.abs();
-
         if (speed > model.getMaxSpeed()) {
             vel = vel.getNormalized().mul(model.getMaxSpeed());
         }
+        return this;
     }
 
-    public void updatePos(BoidsModel model) {
-
+    public Behavior<BoidMessage> updatePos(UpdatePosition message) {
         /* Update position */
-
+        var model = message.model;
         pos = pos.sum(vel);
 
         /* environment wrap-around */
@@ -57,7 +89,10 @@ public class Boid {
         if (pos.x >= model.getMaxX()) pos = pos.sum(new V2d(-model.getWidth(), 0));
         if (pos.y < model.getMinY()) pos = pos.sum(new V2d(0, model.getHeight()));
         if (pos.y >= model.getMaxY()) pos = pos.sum(new V2d(0, -model.getHeight()));
+        return this;
     }
+
+
     private List<Boid> getNearbyBoids(BoidsModel model) {
     	var list = new ArrayList<Boid>();
         for (Boid other : model.getBoids()) {
@@ -72,7 +107,7 @@ public class Boid {
         return list;
     }
     
-    private V2d calculateAlignment(List<Boid> nearbyBoids, BoidsModel model) {
+    private V2d calculateAlignment(List<Boid> nearbyBoids) {
         double avgVx = 0;
         double avgVy = 0;
         if (nearbyBoids.size() > 0) {
@@ -89,7 +124,7 @@ public class Boid {
         }
     }
 
-    private V2d calculateCohesion(List<Boid> nearbyBoids, BoidsModel model) {
+    private V2d calculateCohesion(List<Boid> nearbyBoids) {
         double centerX = 0;
         double centerY = 0;
         if (nearbyBoids.size() > 0) {

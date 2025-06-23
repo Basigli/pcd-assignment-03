@@ -19,7 +19,7 @@ public class BoidActor extends AbstractBehavior<BoidMessage> {
         return Behaviors.setup(context -> new BoidActor(context, coordinator, boid, model));
     }
 
-    private  BoidActor(ActorContext<BoidMessage> context, ActorRef<BoidMessage> coordinator, Boid boid, BoidsModel model) {
+    private BoidActor(ActorContext<BoidMessage> context, ActorRef<BoidMessage> coordinator, Boid boid, BoidsModel model) {
         super(context);
         this.coordinator = coordinator;
         this.boid = boid;
