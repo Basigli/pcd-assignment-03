@@ -42,9 +42,6 @@ public class BoidsSimulation {
         ActorSystem<BoidMessage> viewActor = ActorSystem.create(ViewActor.create(model, coordinator, SCREEN_WIDTH, SCREEN_HEIGHT), "ViewActor");  // should I use ActorRef instead of ActorSystem?
 
         coordinator.tell(new AttachView(viewActor));
-        coordinator.tell(new Start());
-
-        //sim.attachView(view);
-        //sim.runSimulation();
+        // coordinator.tell(new Start());
     }
 }

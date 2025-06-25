@@ -19,7 +19,7 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
     private ActorRef<BoidMessage> viewActor = null;
     private int boidCount = 0;
     private boolean isPaused = false;
-    private BoidsModel model = null;
+    private BoidsModel model;
 
     private final int FRAMERATE = 25; // 25 frames per second
     private long t0 = System.currentTimeMillis();
@@ -31,7 +31,7 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
     private BoidCoordinator(ActorContext<BoidMessage> context, BoidsModel model) {
         super(context);
         List<Boid> boids = model.getBoids();
-
+        this.model = model;
         for (int i = 0; i < boids.size(); i++) {
             ActorRef<BoidMessage> boid = context.spawn(BoidActor.create(context.getSelf(), boids.get(i), model), "boid-" + i);
             boidActors.add(boid);
@@ -45,11 +45,28 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
                 .onMessage(Start.class, this::onStart)
                 .onMessage(Stop.class, this::onStop)
                 .onMessage(Resume.class, this::onResume)
+                .onMessage(Reset.class, this::onReset)
                 .onMessage(VelocityComputed.class, this::onVelocityComputed)
                 .onMessage(VelocityUpdated.class, this::onVelocityUpdated)
                 .onMessage(PositionUpdated.class, this::onPositionUpdated)
                 .onMessage(AttachView.class, this::onAttachView)
                 .build();
+    }
+
+    private Behavior<BoidMessage> onReset(Reset reset) {
+
+        model.setNboids(0);
+        model.setNboids(boidActors.size());
+        boidActors.clear();
+        for (var actor : boidActors) {
+            getContext().stop(actor);
+        }
+        var boids = model.getBoids();
+        for (int i = 0; i < boids.size(); i++) {
+            ActorRef<BoidMessage> boid = getContext().spawnAnonymous(BoidActor.create(getContext().getSelf(), boids.get(i), model));
+            boidActors.add(boid);
+        }
+        return this;
     }
 
     private Behavior<BoidMessage> onAttachView(AttachView attachView) {

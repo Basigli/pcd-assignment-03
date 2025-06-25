@@ -1,5 +1,8 @@
 package it.unibo.commmon;
 
+import akka.actor.typed.ActorRef;
+import it.unibo.message.*;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -18,11 +21,11 @@ public class BoidsView implements ChangeListener {
 	private BoidsModel model;
 	private int width, height;
 
-	private BoidsSimulator simulator;
+	private ActorRef<BoidMessage> coordinator;
 	
-	public BoidsView(BoidsModel model, BoidsSimulator simulator, int width, int height) {
+	public BoidsView(BoidsModel model, ActorRef<BoidMessage> coordinator, int width, int height) {
 		this.model = model;
-		this.simulator = simulator;
+		this.coordinator = coordinator;
 		this.width = width;
 		this.height = height;
 
@@ -54,16 +57,20 @@ public class BoidsView implements ChangeListener {
 		boidsNumberInput.setEnabled(true);
 		boidsNumberInput.addActionListener(e -> {
             String input = boidsNumberInput.getText();
-            model.setNboids(Integer.parseInt(input));
-			simulator.notifyBoidsChanged();
+            int nBoids = Integer.parseInt(input);
+			model.setNboids(nBoids);
+			coordinator.tell(new BoidsChanged(nBoids));
+			// simulator.notifyBoidsChanged();
         });
 
 		pauseResumeButton.addActionListener(e -> {
             if (pauseResumeButton.getText().equals("Resume")){
-				simulator.notifyResumed();
+				//simulator.notifyResumed();
+				coordinator.tell(new Resume());
 				boidsNumberInput.setEnabled(false);
 			} else if (pauseResumeButton.getText().equals("Pause")) {
-				simulator.notifyStopped();
+				// simulator.notifyStopped();
+				coordinator.tell(new Stop());
 				boidsNumberInput.setEnabled(true);
 			}
 			pauseResumeButton.setText(pauseResumeButton.getText().equals("Resume") ? "Pause" : "Resume");
@@ -71,13 +78,15 @@ public class BoidsView implements ChangeListener {
 
 		startResetButton.addActionListener(e -> {
 			if(startResetButton.getText().equals("Start")) {
-				simulator.notifyStarted();
+				// simulator.notifyStarted();
+				coordinator.tell(new Start());
 				startResetButton.setText("Reset");
 				pauseResumeButton.setText("Pause");
 				pauseResumeButton.setEnabled(true);
 				boidsNumberInput.setEnabled(false);
 			} else if (startResetButton.getText().equals("Reset")){
-				simulator.notifyResetted();
+				// simulator.notifyResetted();
+				coordinator.tell(new Reset());
 				startResetButton.setText("Start");
 				boidsNumberInput.setEnabled(true);
 				pauseResumeButton.setEnabled(false);

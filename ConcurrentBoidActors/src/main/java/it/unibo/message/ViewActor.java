@@ -15,14 +15,14 @@ public class ViewActor extends AbstractBehavior<BoidMessage> {
 
     private final BoidsView view;
     private final BoidsModel model;
-    private ActorRef<BoidMessage> coordinator = null;
+    private ActorRef<BoidMessage> coordinator;
 
 
     private ViewActor(ActorContext<BoidMessage> context, BoidsModel model, ActorRef<BoidMessage> coordinator, int screenWidth, int screenHeight) {
         super(context);
         this.model = model;
         this.coordinator = coordinator;
-        this.view = new BoidsView(model, null, screenWidth, screenHeight);
+        this.view = new BoidsView(model, coordinator, screenWidth, screenHeight);
     }
 
     public static Behavior<BoidMessage> create(BoidsModel model, ActorRef<BoidMessage> coordinator, int screenWidth, int screenHeight) {
