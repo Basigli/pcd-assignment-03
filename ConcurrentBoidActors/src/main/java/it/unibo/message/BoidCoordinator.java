@@ -20,7 +20,7 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
     private int boidCount = 0;
     private boolean isPaused = false;
     private BoidsModel model;
-
+    private CoordinatorStatus currentStatus;
     private final int FRAMERATE = 25; // 25 frames per second
     private long t0 = System.currentTimeMillis();
     private int framerate;
@@ -33,7 +33,7 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         List<Boid> boids = model.getBoids();
         this.model = model;
         for (int i = 0; i < boids.size(); i++) {
-            ActorRef<BoidMessage> boid = context.spawn(BoidActor.create(context.getSelf(), boids.get(i), model), "boid-" + i);
+            ActorRef<BoidMessage> boid = context.spawnAnonymous(BoidActor.create(context.getSelf(), boids.get(i), model));
             boidActors.add(boid);
         }
     }
@@ -54,19 +54,27 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
     }
 
     private Behavior<BoidMessage> onReset(Reset reset) {
+        if (currentStatus == CoordinatorStatus.PAUSED)
+            reset();
+        currentStatus = CoordinatorStatus.RESETTING;
 
+        return this;
+    }
+
+    private void reset() {
+        boidCount = 0;
         model.setNboids(0);
         model.setNboids(boidActors.size());
-        boidActors.clear();
         for (var actor : boidActors) {
             getContext().stop(actor);
         }
+        boidActors.clear();
         var boids = model.getBoids();
         for (int i = 0; i < boids.size(); i++) {
             ActorRef<BoidMessage> boid = getContext().spawnAnonymous(BoidActor.create(getContext().getSelf(), boids.get(i), model));
             boidActors.add(boid);
         }
-        return this;
+        currentStatus = CoordinatorStatus.COMPUTING_VELOCITY;
     }
 
     private Behavior<BoidMessage> onAttachView(AttachView attachView) {
@@ -75,18 +83,19 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
     }
 
     private Behavior<BoidMessage> onResume(Resume resume) {
-        isPaused = false;
+        currentStatus = CoordinatorStatus.COMPUTING_VELOCITY;
         boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));
         return this;
     }
 
     private Behavior<BoidMessage> onStop(Stop stop) {
-        isPaused = true;
+        currentStatus = CoordinatorStatus.PAUSED;
         return this;
     }
 
 
     private Behavior<BoidMessage> onStart(Start message) {
+        System.out.println("onStart invoked!");
         boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));
         return this;
     }
@@ -135,13 +144,10 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         t0 = System.currentTimeMillis();
 
         // if not paused, compute next velocity
-        if (!isPaused) {
+        if (currentStatus != CoordinatorStatus.PAUSED && currentStatus != CoordinatorStatus.RESETTING)
             boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));
-        }
-
-
-
-
+        if (currentStatus == CoordinatorStatus.RESETTING)
+            reset();
         return this;
     }
 }
