@@ -46,7 +46,7 @@ public class BoidsModel {
         }
     }
 
-    public synchronized void setNboids(int nboids) {
+    public void setNboids(int nboids) {
         int currentNboids = this.boids.size();
 
         if (nboids > currentNboids)
@@ -92,27 +92,27 @@ public class BoidsModel {
     	return height;
     }
 
-    public synchronized void setSeparationWeight(double value) {
+    public void setSeparationWeight(double value) {
     	this.separationWeight = value;
     }
 
-    public synchronized void setAlignmentWeight(double value) {
+    public void setAlignmentWeight(double value) {
     	this.alignmentWeight = value;
     }
 
-    public synchronized void setCohesionWeight(double value) {
+    public void setCohesionWeight(double value) {
     	this.cohesionWeight = value;
     }
 
-    public synchronized double getSeparationWeight() {
+    public double getSeparationWeight() {
     	return separationWeight;
     }
 
-    public synchronized double getCohesionWeight() {
+    public double getCohesionWeight() {
     	return cohesionWeight;
     }
 
-    public synchronized double getAlignmentWeight() {
+    public double getAlignmentWeight() {
     	return alignmentWeight;
     }
     

@@ -31,6 +31,7 @@ public class Boid {
         alignment = calculateAlignment(nearbyBoids, model);
         cohesion = calculateCohesion(nearbyBoids, model);
     }
+
     public void updateVelocity(BoidsModel model) {
         vel = vel.sum(alignment.mul(model.getAlignmentWeight()))
                 .sum(separation.mul(model.getSeparationWeight()))
@@ -58,6 +59,7 @@ public class Boid {
         if (pos.y < model.getMinY()) pos = pos.sum(new V2d(0, model.getHeight()));
         if (pos.y >= model.getMaxY()) pos = pos.sum(new V2d(0, -model.getHeight()));
     }
+
     private List<Boid> getNearbyBoids(BoidsModel model) {
     	var list = new ArrayList<Boid>();
         for (Boid other : model.getBoids()) {
@@ -105,7 +107,7 @@ public class Boid {
         	return new V2d(0, 0);
         }
     }
-    
+
     private V2d calculateSeparation(List<Boid> nearbyBoids, BoidsModel model) {
         double dx = 0;
         double dy = 0;

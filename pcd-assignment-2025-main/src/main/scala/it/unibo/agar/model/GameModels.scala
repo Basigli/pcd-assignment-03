@@ -20,12 +20,7 @@ case class Player(id: String, x: Double, y: Double, mass: Double) extends Entity
 
 case class Food(id: String, x: Double, y: Double, mass: Double = 100.0) extends Entity
 
-case class World(
-    width: Int,
-    height: Int,
-    players: Seq[Player],
-    foods: Seq[Food]
-):
+case class World(width: Int, height: Int, players: Seq[Player], foods: Seq[Food]):
 
   def playersExcludingSelf(player: Player): Seq[Player] =
     players.filterNot(_.id == player.id)

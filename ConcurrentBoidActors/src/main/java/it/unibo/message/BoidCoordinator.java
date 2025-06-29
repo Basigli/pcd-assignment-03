@@ -15,10 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
+
     private List<ActorRef<BoidMessage>> boidActors = new ArrayList<>();
     private ActorRef<BoidMessage> viewActor = null;
     private int boidCount = 0;
-    private boolean isPaused = false;
     private BoidsModel model;
     private CoordinatorStatus currentStatus;
     private final int FRAMERATE = 25; // 25 frames per second
@@ -28,6 +28,7 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
     public static Behavior<BoidMessage> create(BoidsModel model) {
         return Behaviors.setup(context -> new BoidCoordinator(context, model));
     }
+
     private BoidCoordinator(ActorContext<BoidMessage> context, BoidsModel model) {
         super(context);
         List<Boid> boids = model.getBoids();
@@ -37,7 +38,6 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
             boidActors.add(boid);
         }
     }
-
 
     @Override
     public Receive<BoidMessage> createReceive() {
@@ -57,7 +57,6 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         if (currentStatus == CoordinatorStatus.PAUSED)
             reset();
         currentStatus = CoordinatorStatus.RESETTING;
-
         return this;
     }
 
@@ -93,9 +92,9 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         return this;
     }
 
-
     private Behavior<BoidMessage> onStart(Start message) {
         System.out.println("onStart invoked!");
+        currentStatus = CoordinatorStatus.COMPUTING_VELOCITY;
         boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));
         return this;
     }
@@ -124,7 +123,6 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         // update GUI
         if (boidCount != boidActors.size())
             return this;
-
 
         boidCount = 0;
         viewActor.tell(new UpdateView(framerate));
