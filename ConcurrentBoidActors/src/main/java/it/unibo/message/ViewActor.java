@@ -8,6 +8,7 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import it.unibo.commmon.BoidsView;
 import it.unibo.commmon.BoidsModel;
+import it.unibo.message.BoidMessage.*;
 
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class ViewActor extends AbstractBehavior<BoidMessage> {
     }
 
     private Behavior<BoidMessage> onUpdateView(UpdateView updateView) {
-        view.update(updateView.framerate);
+        view.update(updateView.framerate());
         return this;
     }
 }

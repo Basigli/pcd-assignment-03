@@ -8,6 +8,7 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import it.unibo.commmon.Boid;
 import it.unibo.commmon.BoidsModel;
+import it.unibo.message.BoidMessage.*;
 
 public class BoidActor extends AbstractBehavior<BoidMessage> {
 

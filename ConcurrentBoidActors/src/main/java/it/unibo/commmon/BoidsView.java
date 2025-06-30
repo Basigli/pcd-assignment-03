@@ -9,6 +9,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
+import it.unibo.message.BoidMessage.*;
 
 public class BoidsView implements ChangeListener {
 
@@ -79,7 +80,7 @@ public class BoidsView implements ChangeListener {
 		startResetButton.addActionListener(e -> {
 			if(startResetButton.getText().equals("Start")) {
 				// simulator.notifyStarted();
-				coordinator.tell(new Start());
+				coordinator.tell(new BoidMessage.Start());
 				startResetButton.setText("Reset");
 				pauseResumeButton.setText("Pause");
 				pauseResumeButton.setEnabled(true);

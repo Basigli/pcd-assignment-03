@@ -10,7 +10,7 @@ import akka.actor.typed.javadsl.Receive;
 import it.unibo.commmon.Boid;
 import it.unibo.commmon.BoidsModel;
 import it.unibo.commmon.BoidsView;
-
+import it.unibo.message.BoidMessage.*;
 import java.util.ArrayList;
 import java.util.List;
 
