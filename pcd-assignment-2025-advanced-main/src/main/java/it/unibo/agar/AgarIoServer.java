@@ -36,7 +36,7 @@ public class AgarIoServer {
         try {
             var gameManagerStub = (RemoteGameStateManager) UnicastRemoteObject.exportObject(gameManager, 0);
             // var registry = LocateRegistry.getRegistry();
-            var registry = LocateRegistry.createRegistry(5000);
+            var registry = LocateRegistry.createRegistry(1099);
             registry.rebind("gameManager", gameManagerStub);
             log("gameManager object registered.");
         } catch (Exception e) {
