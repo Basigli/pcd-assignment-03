@@ -1,10 +1,12 @@
 package it.unibo.agar.model;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class World {
+public class World implements Serializable {
     private final int width;
     private final int height;
     private final List<Player> players;
@@ -16,6 +18,18 @@ public class World {
         this.players = List.copyOf(players); // Ensure immutability
         this.foods = List.copyOf(foods);     // Ensure immutability
     }
+
+    public World(int width, int height, List<Food> foods) {
+        this.width = width;
+        this.height = height;
+        this.players = new ArrayList<>();
+        this.foods = List.copyOf(foods);     // Ensure immutability
+    }
+
+    public void addPlayer(Player newPlayer) {
+        players.add(newPlayer);
+    }
+
 
     public int getWidth() {
         return width;
