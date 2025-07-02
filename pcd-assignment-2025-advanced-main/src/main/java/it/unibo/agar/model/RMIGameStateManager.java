@@ -42,6 +42,11 @@ public class RMIGameStateManager implements RemoteGameStateManager {
         cleanupPlayerDirections();
     }
 
+    @Override
+    public void addPlayer(Player player) throws RemoteException {
+        this.world.addPlayer(player);
+    }
+
 
     private World moveAllPlayers(final World currentWorld) {
         final List<Player> updatedPlayers = currentWorld.getPlayers().stream()

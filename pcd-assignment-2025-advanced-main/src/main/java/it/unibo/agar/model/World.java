@@ -9,13 +9,14 @@ import java.util.stream.Collectors;
 public class World implements Serializable {
     private final int width;
     private final int height;
-    private final List<Player> players;
+    private List<Player> players;
     private final List<Food> foods;
 
     public World(int width, int height, List<Player> players, List<Food> foods) {
         this.width = width;
         this.height = height;
-        this.players = List.copyOf(players); // Ensure immutability
+        //this.players = List.copyOf(players); // Ensure immutability
+        this.players = new ArrayList<>();
         this.foods = List.copyOf(foods);     // Ensure immutability
     }
 
@@ -24,6 +25,7 @@ public class World implements Serializable {
         this.height = height;
         this.players = new ArrayList<>();
         this.foods = List.copyOf(foods);     // Ensure immutability
+
     }
 
     public void addPlayer(Player newPlayer) {
@@ -40,7 +42,7 @@ public class World implements Serializable {
     }
 
     public List<Player> getPlayers() {
-        return players;
+        return this.players;
     }
 
     public List<Food> getFoods() {
