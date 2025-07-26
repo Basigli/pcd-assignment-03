@@ -9,11 +9,10 @@ object GameManagerLookupActor:
   def apply(onFound: ActorRef[Message] => Unit, onNotFound: () => Unit, key: ServiceKey[Message]): Behavior[Receptionist.Listing] =
     Behaviors.receive { (ctx, msg) =>
       msg.serviceInstances(key).headOption match
-        case Some(ref) => 
-          println("PORCODIO TROVATA") 
+        case Some(ref) =>
           onFound(ref)
           Behaviors.stopped
-        case None      => 
+        case None      =>
           onNotFound()
           Behaviors.same
     }

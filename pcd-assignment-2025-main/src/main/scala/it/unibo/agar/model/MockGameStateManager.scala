@@ -4,7 +4,7 @@ package it.unibo.agar.model
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import it.unibo.agar.Message
-import it.unibo.agar._
+import it.unibo.agar.*
 
 trait GameStateManager:
 
@@ -18,11 +18,12 @@ object GameStateManagerActor:
 //  case object Tick extends Command
 //  case class AddPlayer(player: Player) extends Command
 
-  def apply(initialWorld: World, speed: Double = 10.0): Behavior[Message] =
+  def apply(initialWorld: World,  globalViewActor: ActorRef[Message], speed: Double = 10.0): Behavior[Message] =
     Behaviors.setup { _ =>
       var world = initialWorld
       var directions: Map[String, (Double, Double)] = Map.empty
-
+      var listeners: Seq[ActorRef[Message]] = Seq.empty
+      
       Behaviors.receiveMessage:
         case GetWorld(replyTo) =>
           replyTo ! world
@@ -33,7 +34,7 @@ object GameStateManagerActor:
           Behaviors.same
 
         case Tick =>
-//          println("Tick received")
+          // println("Tick received")
           directions.foreach {
             case (id, (dx, dy)) =>
               world.playerById(id).foreach { player =>
@@ -41,11 +42,15 @@ object GameStateManagerActor:
                 world = updateWorldAfterMovement(newPlayerPosition, world)
               }
           }
+          globalViewActor ! UpdateWorld(world)
+          listeners.foreach:
+            listener => listener ! UpdateWorld(world)
           Behaviors.same
 
         case AddPlayer(player) =>
-          println(s"Added player ${player.id}")
-          world.addPlayer(player)
+          println(s"Received AddPlayer with id: ${player.id}")
+          world = world.addPlayer(player)
+          println(s"Player with id ${world.playerById(player.id).get} added to the world")
           Behaviors.same
     }
 

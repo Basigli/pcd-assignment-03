@@ -10,3 +10,4 @@ case class GetWorld(replyTo: ActorRef[World]) extends Message
 case class MovePlayerDirection(id: String, dx: Double, dy: Double) extends Message
 case object Tick extends Message
 case class AddPlayer(player: Player) extends Message
+case class UpdateWorld(world: World) extends Message

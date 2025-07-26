@@ -23,7 +23,7 @@ object PlayerMain extends SimpleSwingApplication:
   private val port = 25252
   private val width = 1000
   private val height = 1000
-  private val initialMass = 100
+  private val initialMass = 120
   // private val config = ConfigFactory.load("agario.conf")
   private val config = ConfigFactory
     .parseString(s"""akka.remote.artery.canonical.port=${port}""")
@@ -38,27 +38,27 @@ object PlayerMain extends SimpleSwingApplication:
   )
   private val player = Player(s"p${Random.nextInt(100000)}", Random.nextInt(width), Random.nextInt(height), initialMass)
 
-  
+
   system.receptionist ! Receptionist.Find(GameManagerKey, replyTo = lookupActor)
-  
+
   val lookupInterval = 500 // ms
   val lookupTimer = new Timer()
   val lookupTask = new TimerTask:
     override def run(): Unit =
       system.receptionist ! Receptionist.Find(GameManagerKey, replyTo = lookupActor)
-    
-  
+
+
   lookupTimer.scheduleAtFixedRate(lookupTask, 0, lookupInterval)
 
   private val timer = new Timer()
   private val task: TimerTask = new TimerTask:
-    override def run(): Unit = 
+    override def run(): Unit =
       //AIMovement.moveAI("p1", manager)
       //manager.tick()
       // gameStateManagerRef.get ! Tick
       onEDT(Window.getWindows.foreach(_.repaint()))
       // system.receptionist ! Receptionist.Find(GameManagerKey, replyTo = lookupActor)
-    
+
 
 
   timer.scheduleAtFixedRate(task, 0, 30) // every 30ms

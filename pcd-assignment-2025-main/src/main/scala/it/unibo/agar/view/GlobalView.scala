@@ -11,13 +11,10 @@ import scala.concurrent.{Await, Future}
 import scala.swing.*
 import scala.concurrent.duration.DurationInt
 
-class GlobalView(val gameStateManager: ActorRef[Message])(using system: ActorSystem[?]) extends MainFrame with WorldFetcher:
+class GlobalView(var world: World) extends MainFrame:
   title = "Agar.io - Global View"
   preferredSize = new Dimension(800, 800)
 
-
   contents = new Panel:
     override def paintComponent(g: Graphics2D): Unit =
-      val futureWorld = getWorld
-      val world = Await.result(futureWorld, 3.seconds)
       AgarViewUtils.drawWorld(g, world)
