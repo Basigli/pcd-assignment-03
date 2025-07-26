@@ -1,11 +1,15 @@
 package it.unibo.agar.view
 
-import it.unibo.agar.model.MockGameStateManager
+import akka.actor.typed.{ActorRef, ActorSystem}
+import it.unibo.agar.model.GameStateManagerActor.MovePlayerDirection
+import it.unibo.agar.model.{GameStateManagerActor, MockGameStateManager}
 
 import java.awt.Graphics2D
+import scala.concurrent.Await
 import scala.swing.*
+import scala.concurrent.duration.DurationInt
 
-class LocalView(manager: MockGameStateManager, playerId: String) extends MainFrame:
+class LocalView(val gameStateManager: ActorRef[GameStateManagerActor.Command], playerId: String)(using system: ActorSystem[?]) extends MainFrame with WorldFetcher:
 
   title = s"Agar.io - Local View ($playerId)"
   preferredSize = new Dimension(400, 400)
@@ -16,7 +20,8 @@ class LocalView(manager: MockGameStateManager, playerId: String) extends MainFra
     requestFocusInWindow()
 
     override def paintComponent(g: Graphics2D): Unit =
-      val world = manager.getWorld
+      val futureWorld = getWorld
+      val world = Await.result(futureWorld, 3.seconds)
       val playerOpt = world.players.find(_.id == playerId)
       val (offsetX, offsetY) = playerOpt
         .map(p => (p.x - size.width / 2.0, p.y - size.height / 2.0))
@@ -25,10 +30,12 @@ class LocalView(manager: MockGameStateManager, playerId: String) extends MainFra
 
     reactions += { case e: event.MouseMoved =>
       val mousePos = e.point
-      val playerOpt = manager.getWorld.players.find(_.id == playerId)
+      val futureWorld = getWorld
+      val world = Await.result(futureWorld, 3.seconds)
+      val playerOpt = world.players.find(_.id == playerId)
       playerOpt.foreach: player =>
         val dx = (mousePos.x - size.width / 2) * 0.01
         val dy = (mousePos.y - size.height / 2) * 0.01
-        manager.movePlayerDirection(playerId, dx, dy)
+        gameStateManager ! MovePlayerDirection(playerId, dx, dy)
       repaint()
     }

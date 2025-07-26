@@ -32,7 +32,7 @@ object Main extends SimpleSwingApplication:
   private val foods = GameInitializer.initialFoods(numFoods, width, height)
   private val world = World(width = width, height = height, foods = foods)
   // private val manager = new MockGameStateManager(World(width = width, height = height, foods = foods))
-  var gameStateManagerRef: Option[ActorRef[GameStateManagerActor.Command]] = None
+  private var gameStateManagerRef: Option[ActorRef[GameStateManagerActor.Command]] = None
 
   val config = ConfigFactory.load("agario.conf")
 
