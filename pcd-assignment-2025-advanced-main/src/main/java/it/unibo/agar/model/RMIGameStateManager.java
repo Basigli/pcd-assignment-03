@@ -48,6 +48,11 @@ public class RMIGameStateManager implements RemoteGameStateManager {
         System.out.println("Added player " + player.getId() + " to the world");
     }
 
+    @Override
+    public void removePlayer(String playerId) throws RemoteException {
+        world.removePlayerById(playerId);
+    }
+
 
     private World moveAllPlayers(final World currentWorld) {
         final List<Player> updatedPlayers = currentWorld.getPlayers().stream()

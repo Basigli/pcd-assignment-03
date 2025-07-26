@@ -76,4 +76,8 @@ public class World implements Serializable {
                 .collect(Collectors.toList());
         return new World(width, height, players, newFoods);
     }
+
+    public void removePlayerById(String playerId) {
+        players.removeIf(p -> p.getId().equals(playerId));
+    }
 }
