@@ -14,6 +14,11 @@ class LocalView(var gameStateManager: Option[ActorRef[Message]] = None, playerId
   title = s"Agar.io - Local View ($playerId)"
   preferredSize = new Dimension(400, 400)
 
+  override def closeOperation(): Unit = 
+    gameStateManager.foreach(_ ! PlayerDisconnected(playerId))
+    super.closeOperation()
+  
+  
   contents = new Panel:
     listenTo(keys, mouse.moves)
     focusable = true
@@ -44,3 +49,5 @@ class LocalView(var gameStateManager: Option[ActorRef[Message]] = None, playerId
           repaint()
         case _ => ()
     }
+
+    

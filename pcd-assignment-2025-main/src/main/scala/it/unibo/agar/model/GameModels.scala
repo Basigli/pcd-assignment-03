@@ -41,3 +41,6 @@ case class World(width: Int, height: Int, players: Seq[Player] = Seq.empty, food
 
   def addPlayer(player: Player): World =
     copy(players = players :+ player)
+    
+  def removePlayer(id: String): World =
+    copy(players = players.filterNot(_.id == id))

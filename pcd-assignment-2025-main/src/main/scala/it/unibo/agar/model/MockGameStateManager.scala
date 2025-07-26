@@ -22,8 +22,8 @@ object GameStateManagerActor:
     Behaviors.setup { _ =>
       var world = initialWorld
       var directions: Map[String, (Double, Double)] = Map.empty
-      var listeners: Seq[ActorRef[Message]] = Seq.empty
-      
+      var listeners: Map[String, ActorRef[Message]] = Map.empty
+
       Behaviors.receiveMessage:
         case MovePlayerDirection(id, dx, dy) =>
           directions = directions.updated(id, (dx, dy))
@@ -31,23 +31,28 @@ object GameStateManagerActor:
 
         case Tick =>
           // println("Tick received")
-          directions.foreach {
+          directions.foreach:
             case (id, (dx, dy)) =>
-              world.playerById(id).foreach { player =>
+              world.playerById(id).foreach: player =>
                 val newPlayerPosition = updatePlayerPosition(player, dx, dy, speed, world)
                 world = updateWorldAfterMovement(newPlayerPosition, world)
-              }
-          }
+
           globalViewActor ! UpdateWorld(world)
-          listeners.foreach:
-            listener => listener ! UpdateWorld(world)
+          listeners.foreach: (_, listener) =>
+            listener ! UpdateWorld(world)
           Behaviors.same
 
         case AddPlayer(player, listener) =>
           println(s"Received AddPlayer with id: ${player.id}")
           world = world.addPlayer(player)
           println(s"Player with id ${world.playerById(player.id).get} added to the world")
-          listeners = listeners.appended(listener)
+          listeners = listeners.updated(player.id, listener)
+          Behaviors.same
+
+        case PlayerDisconnected(playerId) =>
+          println(s"Received PlayerDisconnected with id: ${playerId}")
+          world = world.removePlayer(playerId)
+          listeners = listeners.removed(playerId)
           Behaviors.same
     }
 
