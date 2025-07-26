@@ -21,11 +21,10 @@ public class RMIGameStateManager implements RemoteGameStateManager {
         super();
         this.world = initialWorld;
         this.playerDirections = new HashMap<>();
-        // this.world.getPlayers().forEach(p -> playerDirections.put(p.getId(), Position.ZERO));
     }
 
     @Override
-    public World getWorld() throws RemoteException {
+    public synchronized World getWorld() throws RemoteException {
         return this.world;
     }
 

@@ -21,7 +21,7 @@ public class Client {
     public static void main(String[] args) {
         String host = (args.length < 1) ? null : args[0];
         //String playerId = (args.length < 2) ? null : args[1];
-        String playerId = "TestP1";
+        String playerId = "P-" + Integer.toHexString(random.nextInt(0xFFFFF));
 
         AtomicReference<RemoteLocalView> localView = new AtomicReference<>();
         try {

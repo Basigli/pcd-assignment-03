@@ -16,7 +16,6 @@ public class World implements Serializable {
     public World(int width, int height, List<Player> players, List<Food> foods) {
         this.width = width;
         this.height = height;
-        // this.players = List.copyOf(players); // Ensure immutability
         this.players = players;
         this.foods = List.copyOf(foods);     // Ensure immutability
     }

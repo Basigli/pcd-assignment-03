@@ -1,8 +1,6 @@
 package it.unibo.agar;
 
 import it.unibo.agar.model.*;
-import it.unibo.agar.view.GlobalView;
-import it.unibo.agar.view.LocalView;
 import it.unibo.agar.view.RemoteGlobalView;
 
 import javax.swing.*;
@@ -50,17 +48,6 @@ public class AgarIoServer {
             views.add(globalView::repaintView); // Add repaint method reference
             globalView.setVisible(true);
 
-            /*
-            // LocalView localViewP1 = new LocalView(gameManager, "p1");
-            LocalView localViewP1 = new LocalView(null, "p1");
-            views.add(localViewP1::repaintView);
-            localViewP1.setVisible(true);
-
-            // LocalView localViewP2 = new LocalView(gameManager, "p2");
-            LocalView localViewP2 = new LocalView(null, "p2");
-            views.add(localViewP2::repaintView);
-            localViewP2.setVisible(true);
-            */
         });
 
 
@@ -68,10 +55,7 @@ public class AgarIoServer {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                // AI movement for p1, p3, p4
-                // AIMovement.moveAI("p1", gameManager);
-                // AIMovement.moveAI("p3", gameManager); // Assuming p3 is AI
-                // AIMovement.moveAI("p4", gameManager); // Assuming p4 is AI
+
                 try {
                     gameManager.tick();
                 } catch (RemoteException e) {
