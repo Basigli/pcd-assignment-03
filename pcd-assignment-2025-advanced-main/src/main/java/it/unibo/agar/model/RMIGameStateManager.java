@@ -1,5 +1,6 @@
 package it.unibo.agar.model;
 
+import java.awt.*;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +30,7 @@ public class RMIGameStateManager implements RemoteGameStateManager {
     }
 
     @Override
-    public void setPlayerDirection(String playerId, double dx, double dy) throws RemoteException {
+    public synchronized void setPlayerDirection(String playerId, double dx, double dy) throws RemoteException {
         // Ensure player exists before setting direction
         if (world.getPlayerById(playerId).isPresent()) {
             this.playerDirections.put(playerId, Position.of(dx, dy));
@@ -43,8 +44,9 @@ public class RMIGameStateManager implements RemoteGameStateManager {
     }
 
     @Override
-    public void addPlayer(Player player) throws RemoteException {
+    public synchronized void addPlayer(Player player) throws RemoteException {
         this.world.addPlayer(player);
+        System.out.println("Added player " + player.getId() + " to the world");
     }
 
 

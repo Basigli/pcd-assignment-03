@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class World implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final int width;
     private final int height;
     private List<Player> players;
@@ -15,8 +16,8 @@ public class World implements Serializable {
     public World(int width, int height, List<Player> players, List<Food> foods) {
         this.width = width;
         this.height = height;
-        //this.players = List.copyOf(players); // Ensure immutability
-        this.players = new ArrayList<>();
+        // this.players = List.copyOf(players); // Ensure immutability
+        this.players = players;
         this.foods = List.copyOf(foods);     // Ensure immutability
     }
 

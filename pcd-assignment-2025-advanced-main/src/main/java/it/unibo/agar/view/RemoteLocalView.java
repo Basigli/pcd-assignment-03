@@ -40,36 +40,38 @@ public class RemoteLocalView extends JFrame {
             public void mouseMoved(MouseEvent e) {
                 Optional<Player> playerOpt = null;
                 try {
-                    playerOpt = gameStateManager.getWorld().getPlayerById(playerId);
+                    var world = gameStateManager.getWorld();
+                    playerOpt = world.getPlayerById(playerId);
+
                 } catch (RemoteException ex) {
                     throw new RuntimeException(ex);
                 }
                 if (playerOpt.isPresent()) {
-                Point mousePos = e.getPoint();
-                // Player is always in the center of the local view
-                double viewCenterX = gamePanel.getWidth() / 2.0;
-                double viewCenterY = gamePanel.getHeight() / 2.0;
+                    Point mousePos = e.getPoint();
+                    // Player is always in the center of the local view
+                    double viewCenterX = gamePanel.getWidth() / 2.0;
+                    double viewCenterY = gamePanel.getHeight() / 2.0;
 
-                double dx = mousePos.x - viewCenterX;
-                double dy = mousePos.y - viewCenterY;
+                    double dx = mousePos.x - viewCenterX;
+                    double dy = mousePos.y - viewCenterY;
 
-                // Normalize the direction vector
-                double magnitude = Math.hypot(dx, dy);
-                if (magnitude > 0) { // Avoid division by zero if mouse is exactly at center
-                    try {
-                        gameStateManager.setPlayerDirection(playerId, (dx / magnitude) * SENSITIVITY, (dy / magnitude) * SENSITIVITY);
-                    } catch (RemoteException ex) {
-                        throw new RuntimeException(ex);
+                    // Normalize the direction vector
+                    double magnitude = Math.hypot(dx, dy);
+                    if (magnitude > 0) { // Avoid division by zero if mouse is exactly at center
+                        try {
+                            gameStateManager.setPlayerDirection(playerId, (dx / magnitude) * SENSITIVITY, (dy / magnitude) * SENSITIVITY);
+                        } catch (RemoteException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    } else {
+                        try {
+                            gameStateManager.setPlayerDirection(playerId, 0, 0); // Stop if mouse is at center
+                        } catch (RemoteException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
-                } else {
-                    try {
-                        gameStateManager.setPlayerDirection(playerId, 0, 0); // Stop if mouse is at center
-                    } catch (RemoteException ex) {
-                        throw new RuntimeException(ex);
-                    }
+                    // Repainting is handled by the main game loop timer
                 }
-                // Repainting is handled by the main game loop timer
-            }
             }
         });
     }

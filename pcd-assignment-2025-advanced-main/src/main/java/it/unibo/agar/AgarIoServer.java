@@ -30,7 +30,7 @@ public class AgarIoServer {
         final RemoteGameStateManager gameManager = new RMIGameStateManager(initialWorld);
 
         // List to keep track of active views for repainting
-        final List<Main.JFrameRepaintable> views = new ArrayList<>();
+        final List<AgarIoServer.JFrameRepaintable> views = new ArrayList<>();
 
 
         try {
@@ -79,7 +79,7 @@ public class AgarIoServer {
                 }
 
                 SwingUtilities.invokeLater(() -> {
-                    for (Main.JFrameRepaintable view : views) {
+                    for (AgarIoServer.JFrameRepaintable view : views) {
                         view.repaintView();
                     }
                 });

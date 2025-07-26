@@ -1,6 +1,9 @@
 package it.unibo.agar.model;
 
-public interface Entity {
+import java.io.Serializable;
+
+public interface Entity extends Serializable {
+    static final long serialVersionUID = 1L;
     String getId();
     double getMass();
     double getX();
