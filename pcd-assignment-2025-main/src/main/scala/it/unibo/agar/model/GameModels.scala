@@ -1,6 +1,8 @@
 package it.unibo.agar.model
 
-sealed trait Entity:
+import akka.serialization.jackson.JsonSerializable
+
+sealed trait Entity extends JsonSerializable:
 
   def id: String
   def mass: Double
@@ -20,7 +22,7 @@ case class Player(id: String, x: Double, y: Double, mass: Double) extends Entity
 
 case class Food(id: String, x: Double, y: Double, mass: Double = 100.0) extends Entity
 
-case class World(width: Int, height: Int, players: Seq[Player] = Seq.empty, foods: Seq[Food]):
+case class World(width: Int, height: Int, players: Seq[Player] = Seq.empty, foods: Seq[Food]) extends JsonSerializable:
 
   def playersExcludingSelf(player: Player): Seq[Player] =
     players.filterNot(_.id == player.id)

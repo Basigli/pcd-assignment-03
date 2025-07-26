@@ -1,15 +1,15 @@
 package it.unibo.agar.view
 
 import akka.actor.typed.{ActorRef, ActorSystem}
-import it.unibo.agar.model.GameStateManagerActor.MovePlayerDirection
-import it.unibo.agar.model.{GameStateManagerActor, MockGameStateManager}
 
+import it.unibo.agar.model.GameStateManagerActor
+import it.unibo.agar._
 import java.awt.Graphics2D
 import scala.concurrent.Await
 import scala.swing.*
 import scala.concurrent.duration.DurationInt
 
-class LocalView(val gameStateManager: ActorRef[GameStateManagerActor.Command], playerId: String)(using system: ActorSystem[?]) extends MainFrame with WorldFetcher:
+class LocalView(val gameStateManager: ActorRef[Message], playerId: String)(using system: ActorSystem[?]) extends MainFrame with WorldFetcher:
 
   title = s"Agar.io - Local View ($playerId)"
   preferredSize = new Dimension(400, 400)

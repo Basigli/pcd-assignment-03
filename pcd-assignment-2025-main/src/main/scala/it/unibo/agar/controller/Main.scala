@@ -1,6 +1,6 @@
 package it.unibo.agar.controller
 
-import it.unibo.agar.model.{AIMovement, GameInitializer, GameStateManagerActor, MockGameStateManager, World}
+import it.unibo.agar.model.{AIMovement, GameInitializer, GameStateManagerActor, World}
 import it.unibo.agar.view.GlobalView
 import it.unibo.agar.view.LocalView
 
@@ -12,12 +12,15 @@ import scala.swing.Swing.onEDT
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.Behaviors
 import com.typesafe.config.ConfigFactory
-import it.unibo.agar.model.GameStateManagerActor.Tick
+import it.unibo.agar._
 import akka.actor.typed.ActorRef
-import akka.actor.typed.scaladsl.AskPattern._
-import scala.concurrent.duration._
+import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
+import akka.actor.typed.scaladsl.AskPattern.*
+
+import scala.concurrent.duration.*
 import scala.concurrent.Await
 import akka.util.Timeout
+import it.unibo.agar.{Message, Tick}
 
 given Timeout = Timeout(3.seconds)
 
@@ -32,27 +35,29 @@ object Main extends SimpleSwingApplication:
   private val foods = GameInitializer.initialFoods(numFoods, width, height)
   private val world = World(width = width, height = height, foods = foods)
   // private val manager = new MockGameStateManager(World(width = width, height = height, foods = foods))
-  private var gameStateManagerRef: Option[ActorRef[GameStateManagerActor.Command]] = None
+  private var gameStateManagerRef: Option[ActorRef[Message]] = None
 
-  val config = ConfigFactory.load("agario.conf")
+  //private val config = ConfigFactory.load("agario.conf")
+  private val config = ConfigFactory
+    .parseString(s"""akka.remote.artery.canonical.port=25251""")
+    .withFallback(ConfigFactory.load("agario"))
 
-  val guardian = Behaviors.setup[Nothing] { context =>
-    val gameStateManager = context.spawn(
-      GameStateManagerActor(world),
-      "gameStateManager"
-    )
-    gameStateManagerRef = Some(gameStateManager)
+  private val GameManagerKey = ServiceKey[Message]("GameManager")
+  private val system = ActorSystem(Behaviors.setup[Nothing] { ctx =>
+    val gameManager = ctx.spawn(GameStateManagerActor(world), "GameStateManager")
+    ctx.system.receptionist ! Receptionist.Register(GameManagerKey, gameManager)
+    gameStateManagerRef = Some(gameManager)
     Behaviors.empty
-  }
+  }, "agario", config)
 
-  val system = ActorSystem[Nothing](guardian, "agario", config)
+  // private val system = ActorSystem[Nothing](guardian, "agario", config)
 
   private val timer = new Timer()
   private val task: TimerTask = new TimerTask:
     override def run(): Unit =
       //AIMovement.moveAI("p1", manager)
       //manager.tick()
-      gameStateManagerRef.get ! Tick
+      gameStateManagerRef.foreach(_ ! Tick)
       onEDT(Window.getWindows.foreach(_.repaint()))
   timer.scheduleAtFixedRate(task, 0, 30) // every 30ms
 
