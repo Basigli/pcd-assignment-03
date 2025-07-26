@@ -9,16 +9,17 @@ import scala.concurrent.Await
 import scala.swing.*
 import scala.concurrent.duration.DurationInt
 
+
 class LocalView(var gameStateManager: Option[ActorRef[Message]] = None, playerId: String, var world: Option[World] = None) extends MainFrame:
 
   title = s"Agar.io - Local View ($playerId)"
   preferredSize = new Dimension(400, 400)
 
-  override def closeOperation(): Unit = 
+  override def closeOperation(): Unit =
     gameStateManager.foreach(_ ! PlayerDisconnected(playerId))
     super.closeOperation()
-  
-  
+
+
   contents = new Panel:
     listenTo(keys, mouse.moves)
     focusable = true
@@ -50,4 +51,4 @@ class LocalView(var gameStateManager: Option[ActorRef[Message]] = None, playerId
         case _ => ()
     }
 
-    
+

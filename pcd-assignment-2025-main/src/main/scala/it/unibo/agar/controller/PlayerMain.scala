@@ -20,7 +20,8 @@ import scala.swing.{Frame, SimpleSwingApplication}
 import scala.util.Random
 
 object PlayerMain extends SimpleSwingApplication:
-  private val port = 25252
+  
+  private val port = 20000 + Random.nextInt(10000)
   private val width = 1000
   private val height = 1000
   private val initialMass = 120
@@ -52,7 +53,8 @@ object PlayerMain extends SimpleSwingApplication:
     override def run(): Unit =
       system.receptionist ! Receptionist.Find(GameManagerKey, replyTo = lookupActor)
 
-
+  
+    
   lookupTimer.scheduleAtFixedRate(lookupTask, 0, lookupInterval)
 
 //  private val timer = new Timer()
@@ -77,3 +79,4 @@ object PlayerMain extends SimpleSwingApplication:
     localView.open()
     new Frame {visible = false}
   }
+

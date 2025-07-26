@@ -11,3 +11,4 @@ case object Tick extends Message
 case class AddPlayer(player: Player, replyTo: ActorRef[Message]) extends Message
 case class UpdateWorld(world: World) extends Message
 case class PlayerDisconnected(playerId: String) extends Message
+case class GameOver(winnerId: String) extends Message

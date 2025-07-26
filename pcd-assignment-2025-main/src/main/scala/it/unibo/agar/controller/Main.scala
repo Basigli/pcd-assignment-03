@@ -1,6 +1,6 @@
 package it.unibo.agar.controller
 
-import it.unibo.agar.model.{AIMovement, GameInitializer, GameStateManagerActor, World}
+import it.unibo.agar.model.{AIMovement, ClockActor, GameInitializer, GameStateManagerActor, World}
 import it.unibo.agar.view.{GlobalView, GlobalViewActor, LocalView}
 
 import java.awt.Window
@@ -29,6 +29,7 @@ object Main extends SimpleSwingApplication:
   private val width = 1000
   private val height = 1000
   // private val numPlayers = 4  // no more necessary
+  private val tickInterval = 30.millis
   private val numFoods = 100  // initial value, food will be generated dynamically
   // private val players = GameInitializer.initialPlayers(numPlayers, width, height)     // no more necessary
   private val foods = GameInitializer.initialFoods(numFoods, width, height)
@@ -45,6 +46,7 @@ object Main extends SimpleSwingApplication:
   private val system = ActorSystem(Behaviors.setup[Nothing] { ctx =>
     val globalViewActor = ctx.spawn(GlobalViewActor(globalView), "GlobalViewActor")
     val gameManager = ctx.spawn(GameStateManagerActor(world, globalViewActor), "GameStateManager")
+    val clock = ctx.spawn(ClockActor(gameManager, tickInterval), "ClockActor")
     ctx.system.receptionist ! Receptionist.Register(GameManagerKey, gameManager)
     gameStateManagerRef = Some(gameManager)
     Behaviors.empty
@@ -52,13 +54,13 @@ object Main extends SimpleSwingApplication:
 
   // private val system = ActorSystem[Nothing](guardian, "agario", config)
 
-  private val timer = new Timer()
-  private val task: TimerTask = new TimerTask:
-    override def run(): Unit =
-      //AIMovement.moveAI("p1", manager)
-      //manager.tick()
-      gameStateManagerRef.foreach(_ ! Tick)
-  timer.scheduleAtFixedRate(task, 0, 30) // every 30ms
+//  private val timer = new Timer()
+//  private val task: TimerTask = new TimerTask:
+//    override def run(): Unit =
+//      //AIMovement.moveAI("p1", manager)
+//      //manager.tick()
+//      gameStateManagerRef.foreach(_ ! Tick)
+//  timer.scheduleAtFixedRate(task, 0, 30) // every 30ms
 
   override def top: Frame =
     globalView.open()

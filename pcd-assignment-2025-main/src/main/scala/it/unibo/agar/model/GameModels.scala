@@ -2,6 +2,8 @@ package it.unibo.agar.model
 
 import akka.serialization.jackson.JsonSerializable
 
+import scala.util.Random
+
 sealed trait Entity extends JsonSerializable:
 
   def id: String
@@ -44,3 +46,10 @@ case class World(width: Int, height: Int, players: Seq[Player] = Seq.empty, food
     
   def removePlayer(id: String): World =
     copy(players = players.filterNot(_.id == id))
+
+  def addRandomFood(): World =
+    val foodX = Random.nextDouble() * width
+    val foodY = Random.nextDouble() * height
+    val foodId = java.util.UUID.randomUUID().toString
+    val newFood = Food(id = foodId, x = foodX, y = foodY)
+    copy(foods = foods :+ newFood)

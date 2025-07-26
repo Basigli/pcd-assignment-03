@@ -12,34 +12,39 @@ trait GameStateManager:
   def movePlayerDirection(id: String, dx: Double, dy: Double): Unit
 
 object GameStateManagerActor:
-//  sealed trait Command
-//  case class GetWorld(replyTo: ActorRef[World]) extends Command
-//  case class MovePlayerDirection(id: String, dx: Double, dy: Double) extends Command
-//  case object Tick extends Command
-//  case class AddPlayer(player: Player) extends Command
-
   def apply(initialWorld: World,  globalViewActor: ActorRef[Message], speed: Double = 10.0): Behavior[Message] =
     Behaviors.setup { _ =>
       var world = initialWorld
       var directions: Map[String, (Double, Double)] = Map.empty
       var listeners: Map[String, ActorRef[Message]] = Map.empty
-
+      var tickCount = 0
+      val massLimit = 1000
       Behaviors.receiveMessage:
         case MovePlayerDirection(id, dx, dy) =>
           directions = directions.updated(id, (dx, dy))
           Behaviors.same
 
         case Tick =>
-          // println("Tick received")
+          tickCount += 1
           directions.foreach:
             case (id, (dx, dy)) =>
               world.playerById(id).foreach: player =>
                 val newPlayerPosition = updatePlayerPosition(player, dx, dy, speed, world)
                 world = updateWorldAfterMovement(newPlayerPosition, world)
 
-          globalViewActor ! UpdateWorld(world)
-          listeners.foreach: (_, listener) =>
-            listener ! UpdateWorld(world)
+          if tickCount % 20 == 0 then
+            world = world.addRandomFood()
+            tickCount = 0
+
+          world.players.find(_.mass >= massLimit) match {
+            case Some(winner) =>
+              listeners.foreach: (_, listener) =>
+                listener ! GameOver(winner.id)
+            case None =>
+              globalViewActor ! UpdateWorld(world)
+              listeners.foreach: (_, listener) =>
+                listener ! UpdateWorld(world)
+          }
           Behaviors.same
 
         case AddPlayer(player, listener) =>
