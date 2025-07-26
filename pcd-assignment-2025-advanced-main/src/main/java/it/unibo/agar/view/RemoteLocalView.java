@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.rmi.RemoteException;
 import java.util.Optional;
 
@@ -22,10 +23,10 @@ public class RemoteLocalView extends JFrame {
         this.playerId = playerId;
 
         setTitle("Agar.io - Local View (" + playerId + ") (Java)");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Dispose only this window
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Dispose only this window
         addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(java.awt.event.WindowEvent e) {
+            public void windowClosing(WindowEvent e) {
                 try {
                     gameStateManager.removePlayer(playerId);
                 } catch (RemoteException ex) {
@@ -91,6 +92,17 @@ public class RemoteLocalView extends JFrame {
     public void repaintView() {
         if (gamePanel != null) {
             gamePanel.repaint();
+            try {
+                var world = gameStateManager.getWorld();
+                var playerOpt = world.getPlayerById(playerId);
+                if (gameStateManager.isGameOver()) {
+                    System.out.println("Game over");
+                    dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+                    return;
+                }
+            } catch (RemoteException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 }

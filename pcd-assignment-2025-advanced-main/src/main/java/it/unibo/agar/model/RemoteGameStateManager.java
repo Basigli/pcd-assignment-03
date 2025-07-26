@@ -10,4 +10,5 @@ public interface RemoteGameStateManager extends Remote {
     public void tick() throws RemoteException;
     public void addPlayer(Player player) throws RemoteException;
     void removePlayer(String playerId) throws RemoteException;
+    boolean isGameOver() throws RemoteException;
 }

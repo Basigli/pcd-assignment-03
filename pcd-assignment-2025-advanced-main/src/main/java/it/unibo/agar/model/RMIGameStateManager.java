@@ -9,13 +9,16 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 public class RMIGameStateManager implements RemoteGameStateManager {
-
+    private static final double MAX_MASS = 1000.0;
     private static final double PLAYER_SPEED = 2.0;
     private static final int MAX_FOOD_ITEMS = 150;
+    private static final int WORLD_WIDTH = 2000;
+    private static final int WORLD_HEIGHT = 2000;
     private static final Random random = new Random();
     private World world;
     private final Map<String, Position> playerDirections;
-
+    private volatile boolean gameOver = false;
+    private int ticks = 0;
 
     public RMIGameStateManager(World initialWorld) throws RemoteException {
         super();
@@ -38,6 +41,17 @@ public class RMIGameStateManager implements RemoteGameStateManager {
 
     @Override
     public void tick() throws RemoteException {
+        ticks++;
+        for (Player p : world.getPlayers()) {
+            if (p.getMass() >= MAX_MASS) {
+                gameOver = true;
+                break;
+            }
+        }
+        if (ticks % 20 == 0) {
+            spawnRandomFood();
+            ticks = 0;
+        }
         this.world = handleEating(moveAllPlayers(this.world));
         cleanupPlayerDirections();
     }
@@ -115,5 +129,18 @@ public class RMIGameStateManager implements RemoteGameStateManager {
         this.playerDirections.keySet().retainAll(currentPlayerIds);
         this.world.getPlayers().forEach(p ->
                 playerDirections.putIfAbsent(p.getId(), Position.ZERO));
+    }
+
+    @Override
+    public synchronized boolean isGameOver() throws RemoteException {
+        return gameOver;
+    }
+
+    private void spawnRandomFood() {
+        Random rand = new Random();
+        int x = rand.nextInt(WORLD_WIDTH);
+        int y = rand.nextInt(WORLD_HEIGHT);
+        double mass = 120.0;
+        this.world = world.addFood(new Food("f-"+ rand.nextInt(1000), x, y, mass));
     }
 }

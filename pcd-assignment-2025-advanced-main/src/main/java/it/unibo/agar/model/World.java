@@ -77,6 +77,11 @@ public class World implements Serializable {
         return new World(width, height, players, newFoods);
     }
 
+    public World addFood(Food food) {
+        List<Food> newFoods = new ArrayList<>(this.foods);
+        newFoods.add(food);
+        return new World(width, height, players, newFoods);
+    }
     public void removePlayerById(String playerId) {
         players.removeIf(p -> p.getId().equals(playerId));
     }
