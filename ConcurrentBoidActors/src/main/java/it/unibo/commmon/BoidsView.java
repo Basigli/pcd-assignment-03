@@ -145,13 +145,14 @@ public class BoidsView implements ChangeListener {
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() == separationSlider) {
 			var val = separationSlider.getValue();
-			model.setSeparationWeight(0.1*val);
+			coordinator.tell(new BoidMessage.SetSeparationWeight(0.1*val));
+
 		} else if (e.getSource() == cohesionSlider) {
 			var val = cohesionSlider.getValue();
-			model.setCohesionWeight(0.1*val);
+			coordinator.tell(new BoidMessage.SetCohesionWeight(0.1*val));
 		} else if (e.getSource() == alignmentSlider){
 			var val = alignmentSlider.getValue();
-			model.setAlignmentWeight(0.1*val);
+			coordinator.tell(new BoidMessage.SetAlignmentWeight(0.1*val));
 		}
 
 	}

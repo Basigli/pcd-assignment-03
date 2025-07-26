@@ -14,4 +14,8 @@ public interface BoidMessage {
     record PositionUpdated() implements BoidMessage {}
     record UpdateView(int framerate) implements BoidMessage {}
     record BoidsChanged(int nBoids) implements BoidMessage {}
+    record SetSeparationWeight(double separationWeight) implements BoidMessage {}
+    record SetCohesionWeight(double cohesionWeight) implements BoidMessage {}
+    record SetAlignmentWeight(double alignmentWeight) implements BoidMessage {}
+
 }

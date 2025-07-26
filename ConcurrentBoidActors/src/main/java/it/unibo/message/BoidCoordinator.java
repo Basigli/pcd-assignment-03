@@ -50,6 +50,9 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
                 .onMessage(VelocityUpdated.class, this::onVelocityUpdated)
                 .onMessage(PositionUpdated.class, this::onPositionUpdated)
                 .onMessage(AttachView.class, this::onAttachView)
+                .onMessage(SetSeparationWeight.class, this::onSetSeparationWeight)
+                .onMessage(SetCohesionWeight.class, this::onSetCohesionWeight)
+                .onMessage(SetAlignmentWeight.class, this::onSetAlignmentWeight)
                 .build();
     }
 
@@ -146,6 +149,19 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
             boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));
         if (currentStatus == CoordinatorStatus.RESETTING)
             reset();
+        return this;
+    }
+
+    private Behavior<BoidMessage> onSetSeparationWeight(SetSeparationWeight message) {
+        model.setSeparationWeight(message.separationWeight());
+        return this;
+    }
+    private Behavior<BoidMessage> onSetCohesionWeight(SetCohesionWeight message) {
+        model.setCohesionWeight(message.cohesionWeight());
+        return this;
+    }
+    private Behavior<BoidMessage> onSetAlignmentWeight(SetAlignmentWeight message) {
+        model.setAlignmentWeight(message.alignmentWeight());
         return this;
     }
 }
