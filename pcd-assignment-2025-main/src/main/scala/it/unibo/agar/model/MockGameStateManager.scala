@@ -25,10 +25,6 @@ object GameStateManagerActor:
       var listeners: Seq[ActorRef[Message]] = Seq.empty
       
       Behaviors.receiveMessage:
-        case GetWorld(replyTo) =>
-          replyTo ! world
-          Behaviors.same
-
         case MovePlayerDirection(id, dx, dy) =>
           directions = directions.updated(id, (dx, dy))
           Behaviors.same
@@ -47,10 +43,11 @@ object GameStateManagerActor:
             listener => listener ! UpdateWorld(world)
           Behaviors.same
 
-        case AddPlayer(player) =>
+        case AddPlayer(player, listener) =>
           println(s"Received AddPlayer with id: ${player.id}")
           world = world.addPlayer(player)
           println(s"Player with id ${world.playerById(player.id).get} added to the world")
+          listeners = listeners.appended(listener)
           Behaviors.same
     }
 
