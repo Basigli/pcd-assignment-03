@@ -20,7 +20,7 @@ import scala.swing.{Frame, SimpleSwingApplication}
 import scala.util.Random
 
 object PlayerMain extends SimpleSwingApplication:
-  
+
   private val port = 20000 + Random.nextInt(10000)
   private val width = 1000
   private val height = 1000
@@ -28,11 +28,9 @@ object PlayerMain extends SimpleSwingApplication:
 
   private val player = Player(s"p${Random.nextInt(100000)}", Random.nextInt(width), Random.nextInt(height), initialMass)
   private val localView = LocalView(playerId = player.id)
-  // private val config = ConfigFactory.load("agario.conf")
   private val config = ConfigFactory
     .parseString(s"""akka.remote.artery.canonical.port=${port}""")
     .withFallback(ConfigFactory.load("agario"))
-  // private val system = ActorSystem[Nothing](akka.actor.typed.scaladsl.Behaviors.empty[Nothing], "agario-player", config)
   private val GameManagerKey = ServiceKey[Message]("GameManager")
   private val gameManagerRefPromise = scala.concurrent.Promise[ActorRef[Message]]()
   private val system = ActorSystem(Behaviors.empty, "agario", config)
@@ -53,20 +51,8 @@ object PlayerMain extends SimpleSwingApplication:
     override def run(): Unit =
       system.receptionist ! Receptionist.Find(GameManagerKey, replyTo = lookupActor)
 
-  
-    
-  lookupTimer.scheduleAtFixedRate(lookupTask, 0, lookupInterval)
 
-//  private val timer = new Timer()
-//  private val task: TimerTask = new TimerTask:
-//    override def run(): Unit =
-//      AIMovement.moveAI("p1", manager)
-//      manager.tick()
-//      gameStateManagerRef.get ! Tick
-//      onEDT(Window.getWindows.foreach(_.repaint()))
-//      system.receptionist ! Receptionist.Find(GameManagerKey, replyTo = lookupActor)
-//
-//  timer.scheduleAtFixedRate(task, 0, 30) // every 30ms
+  lookupTimer.scheduleAtFixedRate(lookupTask, 0, lookupInterval)
 
   gameManagerRefPromise.future.foreach { gameManagerRef =>
     lookupTimer.cancel()

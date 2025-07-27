@@ -9,7 +9,6 @@ object GlobalViewActor:
     Behaviors.setup { context =>
       Behaviors.receiveMessage {
         case UpdateWorld(world) =>
-          // println("Received UpdateWorld")
           globalView.world = world
           globalView.repaint()
           Behaviors.same

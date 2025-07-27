@@ -19,7 +19,6 @@ class LocalView(var gameStateManager: Option[ActorRef[Message]] = None, playerId
     gameStateManager.foreach(_ ! PlayerDisconnected(playerId))
     super.closeOperation()
 
-
   contents = new Panel:
     listenTo(keys, mouse.moves)
     focusable = true

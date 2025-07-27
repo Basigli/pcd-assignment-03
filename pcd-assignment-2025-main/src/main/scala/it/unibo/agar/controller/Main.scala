@@ -1,6 +1,6 @@
 package it.unibo.agar.controller
 
-import it.unibo.agar.model.{AIMovement, ClockActor, GameInitializer, GameStateManagerActor, World}
+import it.unibo.agar.model.{ ClockActor, GameInitializer, GameStateManagerActor, World}
 import it.unibo.agar.view.{GlobalView, GlobalViewActor, LocalView}
 
 import java.awt.Window
@@ -28,16 +28,12 @@ object Main extends SimpleSwingApplication:
 
   private val width = 1000
   private val height = 1000
-  // private val numPlayers = 4  // no more necessary
   private val tickInterval = 30.millis
   private val numFoods = 100  // initial value, food will be generated dynamically
-  // private val players = GameInitializer.initialPlayers(numPlayers, width, height)     // no more necessary
   private val foods = GameInitializer.initialFoods(numFoods, width, height)
   private val world = World(width = width, height = height, foods = foods)
-  // private val manager = new MockGameStateManager(World(width = width, height = height, foods = foods))
   private var gameStateManagerRef: Option[ActorRef[Message]] = None
   private var globalView = GlobalView(world)
-  //private val config = ConfigFactory.load("agario.conf")
   private val config = ConfigFactory
     .parseString(s"""akka.remote.artery.canonical.port=25251""")
     .withFallback(ConfigFactory.load("agario"))
@@ -51,16 +47,7 @@ object Main extends SimpleSwingApplication:
     gameStateManagerRef = Some(gameManager)
     Behaviors.empty
   }, "agario", config)
-
-  // private val system = ActorSystem[Nothing](guardian, "agario", config)
-
-//  private val timer = new Timer()
-//  private val task: TimerTask = new TimerTask:
-//    override def run(): Unit =
-//      //AIMovement.moveAI("p1", manager)
-//      //manager.tick()
-//      gameStateManagerRef.foreach(_ ! Tick)
-//  timer.scheduleAtFixedRate(task, 0, 30) // every 30ms
+  
 
   override def top: Frame =
     globalView.open()

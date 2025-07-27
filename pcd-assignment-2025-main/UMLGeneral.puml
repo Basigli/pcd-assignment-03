@@ -1,0 +1,57 @@
+@startuml
+package "controller" {
+  class Main
+  class PlayerMain
+}
+
+package "model" {
+  class GameStateManagerActor
+  class GameInitializer
+  class GameManagerLookupActor
+  class World
+  class Player
+  class Food
+}
+
+package "view" {
+  class LocalView
+  class LocalViewActor
+  class GlobalView
+  class GlobalViewActor
+}
+
+
+
+
+Main --> GlobalView
+Main --> GameStateManagerActor
+Main --> GlobalViewActor
+
+PlayerMain --> LocalView
+PlayerMain --> LocalViewActor
+PlayerMain --> GameManagerLookupActor
+PlayerMain --> GameStateManagerActor
+
+LocalViewActor --> LocalView
+GlobalViewActor --> GlobalView
+
+GameStateManagerActor --> World
+GameStateManagerActor --> Player
+GameStateManagerActor --> Food
+
+GameManagerLookupActor --> GameStateManagerActor
+
+LocalView --> GameStateManagerActor
+LocalView --> Player
+
+GlobalView --> World
+
+
+World --> Player
+World --> Food
+
+GameInitializer --> Player
+GameInitializer --> Food
+
+
+@enduml
