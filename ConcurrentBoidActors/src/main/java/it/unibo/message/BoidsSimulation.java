@@ -35,8 +35,7 @@ public class BoidsSimulation {
                 PERCEPTION_RADIUS,
                 AVOID_RADIUS);
 
-
-        ActorSystem<BoidMessage> coordinator = ActorSystem.create(BoidCoordinator.create(model), "Coorinator");
+        ActorSystem<BoidMessage> coordinator = ActorSystem.create(BoidCoordinator.create(model), "Coordinator");
         ActorRef<BoidMessage> viewActor = coordinator.systemActorOf(
                 ViewActor.create(model, coordinator, SCREEN_WIDTH, SCREEN_HEIGHT), "ViewActor", Props.empty());
         coordinator.tell(new AttachView(viewActor));
