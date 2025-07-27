@@ -1,6 +1,5 @@
 package it.unibo.message;
 
-import akka.actor.Props;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
@@ -9,7 +8,6 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import it.unibo.commmon.Boid;
 import it.unibo.commmon.BoidsModel;
-import it.unibo.commmon.BoidsView;
 import it.unibo.message.BoidMessage.*;
 import java.util.ArrayList;
 import java.util.List;

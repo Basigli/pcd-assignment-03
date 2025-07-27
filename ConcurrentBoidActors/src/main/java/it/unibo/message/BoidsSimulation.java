@@ -3,11 +3,7 @@ package it.unibo.message;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
 import akka.actor.typed.Props;
-import it.unibo.commmon.Boid;
 import it.unibo.commmon.BoidsModel;
-import it.unibo.commmon.BoidsView;
-import it.unibo.message.BoidCoordinator;
-import java.util.List;
 import it.unibo.message.BoidMessage.AttachView;
 
 public class BoidsSimulation {
