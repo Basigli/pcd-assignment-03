@@ -1,0 +1,43 @@
+@startuml
+interface Serializable
+
+interface Entity {
+    +String getId()
+    +double getMass()
+    +double getX()
+    +double getY()
+    +double getRadius()
+    +double distanceTo(other: Entity)
+}
+
+abstract class AbstractEntity {
+    -String id
+    -double x
+    -double y
+    -double mass
+    -double radius
+    +getId()
+    +getX()
+    +getY()
+    +getMass()
+    +getRadius()
+}
+
+class Player {
+    +Player(id, x, y, mass)
+    +grow(entity: Entity): Player
+    +moveTo(newX, newY): Player
+}
+
+class Food {
+    +Food(id, x, y, mass)
+    {static} +DEFAULT_MASS
+}
+
+Entity <|.. AbstractEntity
+AbstractEntity <|-- Player
+AbstractEntity <|-- Food
+
+Entity ..|> Serializable
+AbstractEntity ..|> Serializable
+@enduml

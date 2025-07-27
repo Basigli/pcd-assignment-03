@@ -20,9 +20,7 @@ public class Client {
 
     public static void main(String[] args) {
         String host = (args.length < 1) ? null : args[0];
-        //String playerId = (args.length < 2) ? null : args[1];
         String playerId = "P-" + Integer.toHexString(random.nextInt(0xFFFFF));
-
         AtomicReference<RemoteLocalView> localView = new AtomicReference<>();
         try {
             var registry = LocateRegistry.getRegistry(host);
@@ -33,13 +31,10 @@ public class Client {
                 localView.set(new RemoteLocalView(gameManager, playerId));
                 localView.get().setVisible(true);
             });
-
-
         } catch (Exception e) {
             log("Client exception: " + e.toString());
             e.printStackTrace();
         }
-
         final Timer timer = new Timer(true);
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -49,8 +44,6 @@ public class Client {
                 });
             }
         }, 0, GAME_TICK_MS);
-
-
     }
 
     private static void log(String msg) {

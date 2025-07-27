@@ -2,6 +2,7 @@ package it.unibo.message;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
+import akka.actor.typed.Props;
 import it.unibo.commmon.Boid;
 import it.unibo.commmon.BoidsModel;
 import it.unibo.commmon.BoidsView;
@@ -37,11 +38,8 @@ public class BoidsSimulation {
 
 
         ActorSystem<BoidMessage> coordinator = ActorSystem.create(BoidCoordinator.create(model), "Coorinator");
-
-
-        ActorSystem<BoidMessage> viewActor = ActorSystem.create(ViewActor.create(model, coordinator, SCREEN_WIDTH, SCREEN_HEIGHT), "ViewActor");  // should I use ActorRef instead of ActorSystem?
-
+        ActorRef<BoidMessage> viewActor = coordinator.systemActorOf(
+                ViewActor.create(model, coordinator, SCREEN_WIDTH, SCREEN_HEIGHT), "ViewActor", Props.empty());
         coordinator.tell(new AttachView(viewActor));
-        // coordinator.tell(new Start());
     }
 }

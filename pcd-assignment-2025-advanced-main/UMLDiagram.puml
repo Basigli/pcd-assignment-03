@@ -1,0 +1,97 @@
+@startuml
+interface RemoteGameStateManager {
+    +World getWorld()
+    +void setPlayerDirection(playerId, dx, dy)
+    +void tick()
+    +void addPlayer(player)
+    +void removePlayer(playerId)
+    +boolean isGameOver()
+}
+
+class RMIGameStateManager {
+    -World world
+    -Map<String, Position> playerDirections
+    -boolean gameOver
+    -int ticks
+    +getWorld()
+    +setPlayerDirection()
+    +tick()
+    +addPlayer()
+    +removePlayer()
+    +isGameOver()
+}
+
+class World {
+    -int width
+    -int height
+    -List<Player> players
+    -List<Food> foods
+    +addPlayer(newPlayer)
+    +addFood(food)
+    +removePlayers(playersToRemove)
+    +removeFoods(foodsToRemove)
+    +getPlayers()
+    +getFoods()
+    +getPlayerById(id)
+    +removePlayerById(playerId)
+}
+
+class Player {
+    -String id
+    -int x
+    -int y
+    -double mass
+    +moveTo(newX, newY)
+    +grow(foodOrPlayer)
+    +getId()
+}
+
+class Food {
+    -String id
+    -int x
+    -int y
+    -double mass
+    +getId()
+}
+
+class AgarIoServer {
+    +main(args)
+    -log(msg)
+    -JFrameRepaintable
+}
+
+class Client {
+    +main(args)
+    -log(msg)
+}
+
+class RemoteGlobalView {
+    -RemoteGamePanel gamePanel
+    +repaintView()
+}
+
+class RemoteLocalView {
+    -RemoteGamePanel gamePanel
+    -RemoteGameStateManager gameStateManager
+    -String playerId
+    +repaintView()
+}
+
+class RemoteGamePanel
+
+RemoteGameStateManager <|.. RMIGameStateManager
+World "1" o-- "*" Player
+World "1" o-- "*" Food
+AgarIoServer ..> RemoteGameStateManager : utilizza
+AgarIoServer ..> World : crea
+AgarIoServer ..> RemoteGlobalView : crea
+Client ..> RemoteGameStateManager : utilizza
+Client ..> Player : crea
+Client ..> RemoteLocalView : crea
+RemoteGlobalView o-- RemoteGamePanel
+RemoteLocalView o-- RemoteGamePanel
+RemoteLocalView ..> RemoteGameStateManager
+RemoteLocalView ..> Player
+RemoteGamePanel ..> RemoteGameStateManager
+
+@enduml

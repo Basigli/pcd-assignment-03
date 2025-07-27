@@ -18,22 +18,14 @@ public class AgarIoServer {
     private static final int NUM_FOODS = 100;
     private static final long GAME_TICK_MS = 30; // Corresponds
 
-
-
     public static void main(String[] args) throws RemoteException {
-        // final List<Player> initialPlayers = GameInitializer.initialPlayers(NUM_PLAYERS, WORLD_WIDTH, WORLD_HEIGHT);
-
         final List<Food> initialFoods = GameInitializer.initialFoods(NUM_FOODS, WORLD_WIDTH, WORLD_HEIGHT);
         final World initialWorld = new World(WORLD_WIDTH, WORLD_HEIGHT, initialFoods);
         final RemoteGameStateManager gameManager = new RMIGameStateManager(initialWorld);
-
-        // List to keep track of active views for repainting
         final List<AgarIoServer.JFrameRepaintable> views = new ArrayList<>();
-
 
         try {
             var gameManagerStub = (RemoteGameStateManager) UnicastRemoteObject.exportObject(gameManager, 0);
-            // var registry = LocateRegistry.getRegistry();
             var registry = LocateRegistry.createRegistry(1099);
             registry.rebind("gameManager", gameManagerStub);
             log("gameManager object registered.");
