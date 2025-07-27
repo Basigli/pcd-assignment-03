@@ -24,49 +24,44 @@ public class Boid {
     	return vel;
     }
 
-    public void computeVelocity(BoidsModel model) {
+    public void computeVelocity(List<Boid> boids, double perceptionRadius, double avoidRadius) {
         /* change velocity vector according to separation, alignment, cohesion */
-        List<Boid> nearbyBoids = getNearbyBoids(model);
-        separation = calculateSeparation(nearbyBoids, model);
-        alignment = calculateAlignment(nearbyBoids, model);
-        cohesion = calculateCohesion(nearbyBoids, model);
+        List<Boid> nearbyBoids = getNearbyBoids(boids, perceptionRadius);
+        separation = calculateSeparation(nearbyBoids, avoidRadius);
+        alignment = calculateAlignment(nearbyBoids);
+        cohesion = calculateCohesion(nearbyBoids);
     }
 
-    public void updateVelocity(BoidsModel model) {
-        vel = vel.sum(alignment.mul(model.getAlignmentWeight()))
-                .sum(separation.mul(model.getSeparationWeight()))
-                .sum(cohesion.mul(model.getCohesionWeight()));
+    public void updateVelocity(double alignmentWeight, double separationWeight, double cohesionWeight, double maxSpeed) {
+        vel = vel.sum(alignment.mul(alignmentWeight))
+                .sum(separation.mul(separationWeight))
+                .sum(cohesion.mul(cohesionWeight));
 
         /* Limit speed to MAX_SPEED */
-
         double speed = vel.abs();
-
-        if (speed > model.getMaxSpeed()) {
-            vel = vel.getNormalized().mul(model.getMaxSpeed());
+        if (speed > maxSpeed) {
+            vel = vel.getNormalized().mul(maxSpeed);
         }
     }
 
-    public void updatePos(BoidsModel model) {
+    public void updatePos(double minX, double maxX, double minY, double maxY, double width, double height) {
 
         /* Update position */
-
         pos = pos.sum(vel);
-
         /* environment wrap-around */
-
-        if (pos.x < model.getMinX()) pos = pos.sum(new V2d(model.getWidth(), 0));
-        if (pos.x >= model.getMaxX()) pos = pos.sum(new V2d(-model.getWidth(), 0));
-        if (pos.y < model.getMinY()) pos = pos.sum(new V2d(0, model.getHeight()));
-        if (pos.y >= model.getMaxY()) pos = pos.sum(new V2d(0, -model.getHeight()));
+        if (pos.x < minX) pos = pos.sum(new V2d(width, 0));
+        if (pos.x >= maxX) pos = pos.sum(new V2d(-width, 0));
+        if (pos.y < minY) pos = pos.sum(new V2d(0, height));
+        if (pos.y >= maxY) pos = pos.sum(new V2d(0, -height));
     }
 
-    private List<Boid> getNearbyBoids(BoidsModel model) {
+    private List<Boid> getNearbyBoids(List<Boid> boids, double perceptionRadius) {
     	var list = new ArrayList<Boid>();
-        for (Boid other : model.getBoids()) {
+        for (Boid other : boids) {
         	if (other != this) {
         		P2d otherPos = other.getPos();
         		double distance = pos.distance(otherPos);
-        		if (distance < model.getPerceptionRadius()) {
+        		if (distance < perceptionRadius) {
         			list.add(other);
         		}
         	}
@@ -74,10 +69,10 @@ public class Boid {
         return list;
     }
     
-    private V2d calculateAlignment(List<Boid> nearbyBoids, BoidsModel model) {
+    private V2d calculateAlignment(List<Boid> nearbyBoids) {
         double avgVx = 0;
         double avgVy = 0;
-        if (nearbyBoids.size() > 0) {
+        if (!nearbyBoids.isEmpty()) {
 	        for (Boid other : nearbyBoids) {
 	        	V2d otherVel = other.getVel();
 	            avgVx += otherVel.x;
@@ -91,10 +86,10 @@ public class Boid {
         }
     }
 
-    private V2d calculateCohesion(List<Boid> nearbyBoids, BoidsModel model) {
+    private V2d calculateCohesion(List<Boid> nearbyBoids) {
         double centerX = 0;
         double centerY = 0;
-        if (nearbyBoids.size() > 0) {
+        if (!nearbyBoids.isEmpty()) {
 	        for (Boid other: nearbyBoids) {
 	        	P2d otherPos = other.getPos();
 	            centerX += otherPos.x;
@@ -108,14 +103,14 @@ public class Boid {
         }
     }
 
-    private V2d calculateSeparation(List<Boid> nearbyBoids, BoidsModel model) {
+    private V2d calculateSeparation(List<Boid> nearbyBoids, double avoidRadius) {
         double dx = 0;
         double dy = 0;
         int count = 0;
         for (Boid other: nearbyBoids) {
         	P2d otherPos = other.getPos();
     	    double distance = pos.distance(otherPos);
-    	    if (distance < model.getAvoidRadius()) {
+    	    if (distance < avoidRadius) {
     	    	dx += pos.x - otherPos.x;
     	    	dy += pos.y - otherPos.y;
     	    	count++;

@@ -14,17 +14,15 @@ public class BoidActor extends AbstractBehavior<BoidMessage> {
 
     private final ActorRef<BoidMessage> coordinator;
     private final Boid boid;
-    private final BoidsModel model;
 
-    public static Behavior<BoidMessage> create(ActorRef<BoidMessage> coordinator, Boid boid, BoidsModel model) {
-        return Behaviors.setup(context -> new BoidActor(context, coordinator, boid, model));
+    public static Behavior<BoidMessage> create(ActorRef<BoidMessage> coordinator, Boid boid) {
+        return Behaviors.setup(context -> new BoidActor(context, coordinator, boid));
     }
 
-    private  BoidActor(ActorContext<BoidMessage> context, ActorRef<BoidMessage> coordinator, Boid boid, BoidsModel model) {
+    private  BoidActor(ActorContext<BoidMessage> context, ActorRef<BoidMessage> coordinator, Boid boid) {
         super(context);
         this.coordinator = coordinator;
         this.boid = boid;
-        this.model = model;
     }
 
     @Override
@@ -36,21 +34,20 @@ public class BoidActor extends AbstractBehavior<BoidMessage> {
                 .build();
     }
 
-
     private Behavior<BoidMessage> onComputeVelocity(ComputeVelocity message) {
-        boid.computeVelocity(model);
+        boid.computeVelocity(message.boids(), message.perceptionRadius(), message.avoidRadius());
         coordinator.tell(new VelocityComputed());
         return this;
     }
 
     private Behavior<BoidMessage> onUpdateVelocity(UpdateVelocity message) {
-        boid.updateVelocity(model);
+        boid.updateVelocity(message.alignmentWeight(), message.separationWeight(), message.cohesionWeight(), message.maxSpeed());
         coordinator.tell(new VelocityUpdated());
         return this;
     }
 
     private Behavior<BoidMessage> onUpdatePosition(UpdatePosition message) {
-        boid.updatePos(model);
+        boid.updatePos(message.minX(), message.maxX(), message.minY(), message.maxY(), message.width(), message.heigh());
         coordinator.tell(new PositionUpdated());
         return this;
     }

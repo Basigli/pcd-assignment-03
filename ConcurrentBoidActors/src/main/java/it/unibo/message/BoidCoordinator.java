@@ -34,7 +34,7 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         List<Boid> boids = model.getBoids();
         this.model = model;
         for (int i = 0; i < boids.size(); i++) {
-            ActorRef<BoidMessage> boid = context.spawnAnonymous(BoidActor.create(context.getSelf(), boids.get(i), model));
+            ActorRef<BoidMessage> boid = context.spawnAnonymous(BoidActor.create(context.getSelf(), boids.get(i)));
             boidActors.add(boid);
         }
     }
@@ -73,7 +73,7 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         boidActors.clear();
         var boids = model.getBoids();
         for (int i = 0; i < boids.size(); i++) {
-            ActorRef<BoidMessage> boid = getContext().spawnAnonymous(BoidActor.create(getContext().getSelf(), boids.get(i), model));
+            ActorRef<BoidMessage> boid = getContext().spawnAnonymous(BoidActor.create(getContext().getSelf(), boids.get(i)));
             boidActors.add(boid);
         }
         currentStatus = CoordinatorStatus.COMPUTING_VELOCITY;
@@ -86,7 +86,9 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
 
     private Behavior<BoidMessage> onResume(Resume resume) {
         currentStatus = CoordinatorStatus.COMPUTING_VELOCITY;
-        boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));
+        double perceptionRadius = model.getPerceptionRadius();
+        double avoidRadius = model.getAvoidRadius();
+        boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity(model.getBoids(), perceptionRadius, avoidRadius)));
         return this;
     }
 
@@ -98,7 +100,10 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
     private Behavior<BoidMessage> onStart(Start message) {
         System.out.println("onStart invoked!");
         currentStatus = CoordinatorStatus.COMPUTING_VELOCITY;
-        boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));
+        double perceptionRadius = model.getPerceptionRadius();
+        double avoidRadius = model.getAvoidRadius();
+        boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity(model.getBoids(), perceptionRadius, avoidRadius)));
+
         return this;
     }
 
@@ -106,7 +111,11 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         boidCount++;
         if (boidCount == boidActors.size()) {
             boidCount = 0; // reset count for next cycle
-            boidActors.forEach(boidActor -> boidActor.tell(new UpdateVelocity()));
+            double alignmentWeight = model.getAlignmentWeight();
+            double separationWeight = model.getSeparationWeight();
+            double cohesionWeight = model.getCohesionWeight();
+            double maxSpeed = model.getMaxSpeed();
+            boidActors.forEach(boidActor -> boidActor.tell(new UpdateVelocity(alignmentWeight, separationWeight, cohesionWeight, maxSpeed)));
         }
         return this;
     }
@@ -114,8 +123,14 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
     private Behavior<BoidMessage> onVelocityUpdated(VelocityUpdated message) {
         boidCount++;
         if (boidCount == boidActors.size()) {
+            double minX = model.getMinX();
+            double maxX = model.getMaxX();
+            double minY = model.getMinY();
+            double maxY = model.getMaxY();
+            double width = model.getWidth();
+            double heigh = model.getHeight();
             boidCount = 0;
-            boidActors.forEach(boidActor -> boidActor.tell(new UpdatePosition()));
+            boidActors.forEach(boidActor -> boidActor.tell(new UpdatePosition(minX, maxX, minY, maxY, width, heigh)));
         }
         return this;
     }
@@ -145,8 +160,12 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         t0 = System.currentTimeMillis();
 
         // if not paused, compute next velocity
-        if (currentStatus != CoordinatorStatus.PAUSED && currentStatus != CoordinatorStatus.RESETTING)
-            boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity()));
+        if (currentStatus != CoordinatorStatus.PAUSED && currentStatus != CoordinatorStatus.RESETTING) {
+            double perceptionRadius = model.getPerceptionRadius();
+            double avoidRadius = model.getAvoidRadius();
+            boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity(model.getBoids(), perceptionRadius, avoidRadius)));
+        }
+
         if (currentStatus == CoordinatorStatus.RESETTING)
             reset();
         return this;
