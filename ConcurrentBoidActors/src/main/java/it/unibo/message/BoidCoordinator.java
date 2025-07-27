@@ -79,12 +79,12 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         currentStatus = CoordinatorStatus.COMPUTING_VELOCITY;
     }
 
-    private Behavior<BoidMessage> onAttachView(AttachView attachView) {
-        this.viewActor = attachView.viewActor;
+    private Behavior<BoidMessage> onAttachView(AttachView message) {
+        this.viewActor = message.viewActor();
         return this;
     }
 
-    private Behavior<BoidMessage> onResume(Resume resume) {
+    private Behavior<BoidMessage> onResume(Resume message) {
         currentStatus = CoordinatorStatus.COMPUTING_VELOCITY;
         double perceptionRadius = model.getPerceptionRadius();
         double avoidRadius = model.getAvoidRadius();
@@ -92,7 +92,7 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         return this;
     }
 
-    private Behavior<BoidMessage> onStop(Stop stop) {
+    private Behavior<BoidMessage> onStop(Stop message) {
         currentStatus = CoordinatorStatus.PAUSED;
         return this;
     }

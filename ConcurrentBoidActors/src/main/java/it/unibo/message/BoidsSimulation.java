@@ -8,9 +8,8 @@ import it.unibo.commmon.BoidsModel;
 import it.unibo.commmon.BoidsView;
 import it.unibo.message.BoidCoordinator;
 import java.util.List;
+import it.unibo.message.BoidMessage.AttachView;
 
-
-// very interesting result when separation = 0, alignment = 2, cohesion = 0
 public class BoidsSimulation {
     final static int N_BOIDS = 5000; // 1500;
     final static double SEPARATION_WEIGHT = 1.0;

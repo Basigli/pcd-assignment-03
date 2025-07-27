@@ -1,11 +1,13 @@
 package it.unibo.message;
 
+import akka.actor.typed.ActorRef;
 import it.unibo.commmon.Boid;
 
 import java.util.List;
 
 public interface BoidMessage {
 
+    record AttachView(ActorRef<BoidMessage> viewActor) implements BoidMessage {}
     record Start() implements BoidMessage {}
     record Stop() implements BoidMessage {}
     record Reset() implements BoidMessage {}
