@@ -137,9 +137,8 @@ public class BoidsView implements ChangeListener {
 		} catch (InterruptedException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
+		coordinator.tell(new Resume());
     }
-
-
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
@@ -154,7 +153,6 @@ public class BoidsView implements ChangeListener {
 			var val = alignmentSlider.getValue();
 			coordinator.tell(new BoidMessage.SetAlignmentWeight(0.1*val));
 		}
-
 	}
 	
 	public int getWidth() {

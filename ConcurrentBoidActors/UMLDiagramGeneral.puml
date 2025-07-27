@@ -1,0 +1,28 @@
+@startuml
+
+
+
+class BoidCoordinator
+class BoidActor
+class ViewActor
+class BoidsModel
+class Boid
+class BoidsView
+class BoidsPanel
+class BoidsSimulation
+
+' === Relazioni tra classi ===
+BoidCoordinator "1" o-- "*" BoidActor : crea
+BoidCoordinator "1" o-- "1" ViewActor : crea
+BoidCoordinator "1" --> "1" BoidsModel
+BoidActor "1" --> "1" Boid
+ViewActor "1" --> "1" BoidsView
+BoidsView "1" --> "1" BoidsPanel
+BoidsView "1" --> "1" BoidsModel
+BoidsPanel "1" --> "1" BoidsModel
+BoidsPanel "1" --> "1" BoidsView
+BoidsModel "1" --> "*" Boid
+BoidsSimulation ..> BoidCoordinator : main()
+BoidsSimulation ..> ViewActor : main()
+
+@enduml

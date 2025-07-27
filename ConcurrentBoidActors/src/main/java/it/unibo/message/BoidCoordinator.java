@@ -82,6 +82,7 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         return this;
     }
 
+
     private Behavior<BoidMessage> onResume(Resume message) {
         currentStatus = CoordinatorStatus.COMPUTING_VELOCITY;
         double perceptionRadius = model.getPerceptionRadius();
@@ -141,7 +142,6 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
             return this;
 
         boidCount = 0;
-        viewActor.tell(new UpdateView(framerate));
         var t1 = System.currentTimeMillis();
         var dtElapsed = t1 - t0;
         var frameratePeriod = 1000 / FRAMERATE;
@@ -159,9 +159,8 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
 
         // if not paused, compute next velocity
         if (currentStatus != CoordinatorStatus.PAUSED && currentStatus != CoordinatorStatus.RESETTING) {
-            double perceptionRadius = model.getPerceptionRadius();
-            double avoidRadius = model.getAvoidRadius();
-            boidActors.forEach(boidActor -> boidActor.tell(new ComputeVelocity(model.getBoids(), perceptionRadius, avoidRadius)));
+            viewActor.tell(new UpdateView(framerate));
+            currentStatus = CoordinatorStatus.UPDATING_VIEW;
         }
 
         if (currentStatus == CoordinatorStatus.RESETTING)
@@ -181,4 +180,5 @@ public class BoidCoordinator extends AbstractBehavior<BoidMessage> {
         model.setAlignmentWeight(message.alignmentWeight());
         return this;
     }
+
 }

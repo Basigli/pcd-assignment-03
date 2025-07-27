@@ -1,0 +1,63 @@
+@startuml
+
+' === Actor System ===
+
+
+
+class BoidCoordinator
+
+
+class ViewActor {
+    - BoidsView view
+    + create(BoidsModel, ActorRef, int, int): Behavior
+    + createReceive(): Receive
+}
+
+
+
+class BoidsModel
+
+
+
+
+class BoidsView {
+    - JFrame frame
+    - BoidsPanel boidsPanel
+    - JSlider cohesionSlider, separationSlider, alignmentSlider
+    - JButton pauseResumeButton, startResetButton
+    - JTextField boidsNumberInput
+    - BoidsModel model
+    - int width, height
+    - ActorRef<BoidMessage> coordinator
+    + update(int)
+    + stateChanged(ChangeEvent)
+    + getWidth()/getHeight()
+}
+
+class BoidsPanel {
+    - BoidsView view
+    - BoidsModel model
+    - int framerate
+    + setFrameRate(int)
+    + paintComponent(Graphics)
+}
+
+
+
+
+' === Relazioni tra classi ===
+BoidCoordinator "1" o-- "*" BoidActor : crea
+BoidCoordinator "1" o-- "1" ViewActor : crea
+BoidCoordinator "1" --> "1" BoidsModel
+BoidActor "1" --> "1" Boid
+ViewActor "1" --> "1" BoidsView
+BoidsView "1" --> "1" BoidsPanel
+BoidsView "1" --> "1" BoidsModel
+BoidsPanel "1" --> "1" BoidsModel
+BoidsPanel "1" --> "1" BoidsView
+BoidsModel "1" --> "*" Boid
+
+
+
+
+@enduml

@@ -1,0 +1,119 @@
+@startuml
+
+' === Actor System ===
+
+
+
+class BoidCoordinator {
+    - List<ActorRef<BoidMessage>> boidActors
+    - ActorRef<BoidMessage> viewActor
+    - int boidCount
+    - BoidsModel model
+    - CoordinatorStatus currentStatus
+    - int FRAMERATE
+    - long t0
+    - int framerate
+    + create(BoidsModel): Behavior
+    + createReceive(): Receive
+}
+
+class BoidActor {
+    - ActorRef<BoidMessage> coordinator
+    - Boid boid
+    + create(ActorRef, Boid): Behavior
+    + createReceive(): Receive
+}
+
+class ViewActor {
+    - BoidsView view
+    + create(BoidsModel, ActorRef, int, int): Behavior
+    + createReceive(): Receive
+}
+
+
+
+class BoidsModel {
+    - List<Boid> boids
+    - double separationWeight
+    - double alignmentWeight
+    - double cohesionWeight
+    - double width
+    - double height
+    - double maxSpeed
+    - double perceptionRadius
+    - double avoidRadius
+    + getBoids(): List<Boid>
+    + setNboids(int)
+    + getNboids(): int
+    + getMinX()/getMaxX()/getMinY()/getMaxY()
+    + getWidth()/getHeight()
+    + setSeparationWeight(double)
+    + setAlignmentWeight(double)
+    + setCohesionWeight(double)
+    + getSeparationWeight()/getAlignmentWeight()/getCohesionWeight()
+    + getMaxSpeed()
+    + getAvoidRadius()
+    + getPerceptionRadius()
+}
+
+class Boid {
+    - P2d pos
+    - V2d vel
+    - V2d separation
+    - V2d alignment
+    - V2d cohesion
+    + getPos(): P2d
+    + getVel(): V2d
+    + computeVelocity(List<Boid>, double, double)
+    + updateVelocity(double, double, double, double)
+    + updatePos(double, double, double, double, double, double)
+}
+
+
+class BoidsView {
+    - JFrame frame
+    - BoidsPanel boidsPanel
+    - JSlider cohesionSlider, separationSlider, alignmentSlider
+    - JButton pauseResumeButton, startResetButton
+    - JTextField boidsNumberInput
+    - BoidsModel model
+    - int width, height
+    - ActorRef<BoidMessage> coordinator
+    + update(int)
+    + stateChanged(ChangeEvent)
+    + getWidth()/getHeight()
+}
+
+class BoidsPanel {
+    - BoidsView view
+    - BoidsModel model
+    - int framerate
+    + setFrameRate(int)
+    + paintComponent(Graphics)
+}
+
+
+
+class BoidsSimulation {
+    + main(String[])
+}
+
+
+' === Relazioni tra classi ===
+BoidCoordinator "1" o-- "*" BoidActor : crea
+BoidCoordinator "1" o-- "1" ViewActor : crea
+BoidCoordinator "1" --> "1" BoidsModel
+BoidActor "1" --> "1" Boid
+ViewActor "1" --> "1" BoidsView
+BoidsView "1" --> "1" BoidsPanel
+BoidsView "1" --> "1" BoidsModel
+BoidsPanel "1" --> "1" BoidsModel
+BoidsPanel "1" --> "1" BoidsView
+BoidsModel "1" --> "*" Boid
+
+BoidsSimulation ..> BoidCoordinator : main()
+BoidsSimulation ..> ViewActor : main()
+
+
+
+@enduml
